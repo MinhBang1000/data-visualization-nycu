@@ -6,7 +6,8 @@ const {
     scaleBand,
     max,
     axisLeft,
-    axisBottom
+    axisBottom,
+    format
 } = d3
 
 const svg = select('svg')
@@ -18,7 +19,7 @@ const render = (data) => {
     const yValue = (d) => d.country
     
     const margin = {
-        top: 10,
+        top: 60,
         bottom: 100,
         left: 100,
         right: 10
@@ -37,11 +38,39 @@ const render = (data) => {
     const yScale = scaleBand()
         .domain(data.map(yValue))
         .range([0, innerHeight])
-        .padding(0.1)
+        .padding(0.3)
 
-    const leftAxis = g.append('g').call(axisLeft(yScale))
-    const bottomAxis = g.append('g').call(axisBottom(xScale))
+    const xAxisTickFormat = number => 
+        format('.3s')(number)
+        .replace('G','B')
+
+    const xAxis = axisBottom(xScale)
+        .tickFormat(xAxisTickFormat)
+        .tickSize(-innerHeight)
+        
+    const yAxis = axisLeft(yScale)
+
+    const leftAxis = g.append('g').call(yAxis)
+    const bottomAxis = g.append('g').call(xAxis)
     bottomAxis.attr('transform', `translate(0, ${innerHeight})`)
+
+    // delete lines
+    bottomAxis.selectAll('.domain')
+        .remove()
+    leftAxis.selectAll('.domain, .tick line')
+        .remove()
+    // add label of axis
+    bottomAxis.append('text')
+        .text('Population')
+        .attr('x', innerWidth/2)
+        .attr('y', 50)
+        .attr('class', 'axis-label')
+        .attr('fill','black')
+
+    // add the title of chart
+    g.append('text')
+        .attr('class', 'title')
+        .text('Top 10 Most Populous Countries')
 
     g.selectAll('rect')
         .data(data).enter()

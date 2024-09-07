@@ -5,7 +5,12 @@ text {
 
 rect {
     fill: steelblue;
-    stroke-width: 1px;
-    stroke: black;
+}
 
+.axis-label {
+    font-size: 24px;
+}
+
+.title {
+    font-size: 54px;
 }
