@@ -1,0 +1,11 @@
+text {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+rect {
+    fill: steelblue;
+    stroke-width: 1px;
+    stroke: black;
+
+}
