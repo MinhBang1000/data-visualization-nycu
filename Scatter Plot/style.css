@@ -1,0 +1,20 @@
+text {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+rect {
+    fill: steelblue;
+}
+
+.axis-label {
+    font-size: 24px;
+}
+
+.title {
+    font-size: 54px;
+}
+
+.scatter-plot {
+    fill: steelblue;
+}
