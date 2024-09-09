@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Cars Scatter Plot</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://unpkg.com/d3@5.6.0/dist/d3.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <svg
+        width="1440"
+        height="750"
+        class="canvas item"
+      ></svg>
+      <div class="annotate item">
+        <div class="annotate-item" id="setosa">
+          <span></span>
+          Iris-setosa
+        </div>
+        <div class="annotate-item" id="versicolor">
+          <span></span>
+          Iris-versicolor
+        </div>
+        <div class="annotate-item" id="virginica">
+          <span></span>
+          Iris-virginica
+        </div>
+      </div>
+      <div class="select-group item">
+        <label for="y-select">y-axis:</label>
+        <select id="y-select" class="select">
+          <option value="sepal width">Sepal Width</option>
+          <option value="sepal length">Sepal Length</option>
+          <option value="petal length">Petal Length</option>
+          <option value="petal width">Petal Width</option>
+        </select>
+        <label for="x-select">x-axis:</label>
+        <select id="x-select" class="select">
+          <option value="sepal length">Sepal Length</option>
+          <option value="sepal width">Sepal Width</option>
+          <option value="petal length">Petal Length</option>
+          <option value="petal width">Petal Width</option>
+        </select>
+      </div>
+    </div>
+
+    <script src="bundle.js"></script>
+  </body>
+</html>
