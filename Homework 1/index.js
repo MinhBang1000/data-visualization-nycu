@@ -27,14 +27,14 @@ const render = (data, xAttr, yAttr) => {
   const xAxisLabel = xAttr;
 
   const yValue = (d) => d[yAttr];
-  const circleRadius = 10;
+  const circleRadius = 8;
   const yAxisLabel = yAttr;
 
   const margin = {
-    top: 130,
-    right: 90,
-    bottom: 110,
-    left: 170,
+    top: 100,
+    right: 80,
+    bottom: 100,
+    left: 100,
   };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
@@ -70,7 +70,7 @@ const render = (data, xAttr, yAttr) => {
   yAxisG
     .append('text')
     .attr('class', 'axis-label')
-    .attr('y', -70)
+    .attr('y', -50)
     .attr('x', -innerHeight / 2)
     .attr('transform', `rotate(-90)`)
     .attr('text-anchor', 'middle')
@@ -86,7 +86,7 @@ const render = (data, xAttr, yAttr) => {
   xAxisG
     .append('text')
     .attr('class', 'axis-label')
-    .attr('y', 80)
+    .attr('y', 50)
     .attr('x', innerWidth / 2)
     .text(xAxisLabel);
 

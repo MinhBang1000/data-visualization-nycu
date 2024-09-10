@@ -15,8 +15,8 @@ body {
   }
   
   /* Interactive control style */
-  .select-group {
-    margin-top: 20px;
+  .select-group { 
+    padding: 10px 0;
   }
   
   .select-group label {
@@ -26,7 +26,7 @@ body {
   }
   
   .select {
-    font-size: 16px;
+    font-size: 12px;
     padding: 8px;
     border-radius: 5px;
     border: 1px solid #ccc;
@@ -38,7 +38,7 @@ body {
   .annotate {
     display: flex;
     background-color: white;
-    width: 1440px;
+    width: 960px;
     justify-content: center;
     box-shadow:
       rgba(27, 31, 35, 0.04) 0px 1px 0px,
@@ -46,10 +46,10 @@ body {
   }
   
   .annotate-item {
-    padding-bottom: 10px;
+    padding: 10px 0;
     margin: 0 10px;
     font-weight: bold;
-    font-size: 18px;
+    font-size: 12px;
     display: flex;
     align-items: center;
     cursor: pointer;
@@ -88,12 +88,12 @@ body {
   }
   
   .title {
-    font-size: 48px;
+    font-size: 24px;
     fill: #4a4a4a;
   }
   
   .tick text {
-    font-size: 24px;
+    font-size: 12px;
     fill: #4a4a4a;
   }
   
@@ -102,7 +102,7 @@ body {
   }
   
   .axis-label {
-    font-size: 36px;
+    font-size: 18px;
     fill: #8e8883;
   }
   
