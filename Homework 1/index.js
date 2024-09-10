@@ -133,7 +133,7 @@ const unhoverToLessClarify = (className) => {
     .style('opacity', 0.5);
 };
 
-csv('data.csv').then((data) => {
+csv('http://vis.lab.djosix.com:2024/data/iris.csv').then((data) => {
   data.forEach((d) => {
     d['sepal length'] = +d['sepal length'];
     d['sepal width'] = +d['sepal width'];
