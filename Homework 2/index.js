@@ -6,30 +6,23 @@ const {
   axisLeft,
   axisBottom,
   format,
+  line
 } = d3
+
+import { extractKeys } from "./tools"
 
 const svg = select('svg');
 
 const width = +svg.attr('width');
 const height = +svg.attr('height');
 
-const render = (data, xAttr, yAttr) => {
+const render = (data) => {
   const colors = {
     'Iris-setosa': '#3CB371',
     'Iris-versicolor': '#FF6347',
     'Iris-virginica': '#4B0082',
   };
   const title = `Visualizing Sepal and Petal Dimensions Across Iris Species`;
-
-  const cValue = (d) => d['class'];
-
-  const xValue = (d) => d[xAttr];
-  const xAxisLabel = xAttr;
-
-  const yValue = (d) => d[yAttr];
-  const circleRadius = 8;
-  const yAxisLabel = yAttr;
-
   const margin = {
     top: 100,
     right: 80,
@@ -38,100 +31,63 @@ const render = (data, xAttr, yAttr) => {
   };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
+  const dimensions = extractKeys(data)
+  
+  const g = svg.append('g')
+    .attr('transform', `translate(${margin.left}, ${margin.top})`)
 
   const xScale = scaleLinear()
-    .domain(extent(data, xValue))
+    .domain([0, dimensions.length - 1]) // The number of element in dimensions array
     .range([0, innerWidth])
-    .nice();
+  
+  const yScale = {} // Should be a dictionary of scaleLinear objects
+  dimensions?.forEach((dim) => {
+    yScale[dim] = scaleLinear()
+      .domain(extent(data, (d) => d[dim]))
+      .range([innerHeight, 0])
+      .nice()
+  })
 
-  const yScale = scaleLinear()
-    .domain(extent(data, yValue))
-    .range([innerHeight, 0])
-    .nice();
+  // Draw some axis
+  dimensions?.forEach((dim, i) => {
+    const axisGroup = g.append('g')
+      .attr('transform', `translate(${xScale(i)}, 0)`)
+      .call(axisLeft(yScale[dim]))
+    
+    axisGroup.append('text')
+      .attr('x', 0)
+      .attr('y', -20)
+      .style('fill','black')
+      .attr('text-anchor', 'middle')
+      .attr('class','axis-label')
+      .text(dim)
+  })
 
-  const g = svg
-    .append('g')
-    .attr(
-      'transform',
-      `translate(${margin.left},${margin.top})`,
-    );
+  // Draw some lines
+  const lineGenerator = line()
+    .x((d,i) => xScale(i))
+    .y((d,i) => yScale[dimensions[i]](d))
 
-  const xAxis = axisBottom(xScale)
-    .tickSize(-innerHeight)
-    .tickPadding(15);
-
-  const yAxis = axisLeft(yScale)
-    .tickSize(-innerWidth)
-    .tickPadding(10);
-
-  const yAxisG = g.append('g').call(yAxis);
-  yAxisG.selectAll('.domain').remove();
-
-  yAxisG
-    .append('text')
-    .attr('class', 'axis-label')
-    .attr('y', -50)
-    .attr('x', -innerHeight / 2)
-    .attr('transform', `rotate(-90)`)
-    .attr('text-anchor', 'middle')
-    .text(yAxisLabel);
-
-  const xAxisG = g
-    .append('g')
-    .call(xAxis)
-    .attr('transform', `translate(0,${innerHeight})`);
-
-  xAxisG.select('.domain').remove();
-
-  xAxisG
-    .append('text')
-    .attr('class', 'axis-label')
-    .attr('y', 50)
-    .attr('x', innerWidth / 2)
-    .text(xAxisLabel);
-
-  g.selectAll('circle')
+  g.selectAll('path')
     .data(data)
     .enter()
-    .append('circle')
-    .attr('cy', (d) => yScale(yValue(d)))
-    .attr('cx', (d) => xScale(xValue(d)))
-    .attr('fill', (d) => colors[cValue(d)])
-    .attr('class', (d) => cValue(d))
-    .attr('r', circleRadius)
-    .style('opacity', 0)
+    .append('path')
+    .attr('fill', 'none')
+    .attr('stroke', d => colors[d['class']])
+    .attr('stroke-width', 2)
+    .attr('opcity', 0)
+    .style('opacity',0)
     .transition()
     .duration(1000)
-    .style('opacity', 0.5);
-
-  g.append('text')
-    .attr('class', 'title')
-    .attr('y', -25)
-    .text(title);
+    .style('opacity', 0.3)
+    .attr('d', d => lineGenerator(dimensions.map(dim => d[dim])))
 };
 
 const updateFields = (data) => {
-  svg.selectAll('g').remove();
-  const xAttr = document.getElementById('x-select').value;
-  const yAttr = document.getElementById('y-select').value;
-  render(data, xAttr, yAttr);
+  render(data);
 };
 
-const hoverToMoreClarify = (className) => {
-  svg
-    .selectAll(`.${className}`)
-    .transition()
-    .duration(500)
-    .style('opacity', 1);
-};
 
-const unhoverToLessClarify = (className) => {
-  svg
-    .selectAll(`.${className}`)
-    .transition()
-    .duration(500)
-    .style('opacity', 0.5);
-};
 
 csv('data.csv').then((data) => {
   data.forEach((d) => {
@@ -148,46 +104,4 @@ csv('data.csv').then((data) => {
       !isNaN(d['sepal width']),
   );
   updateFields(validData);
-  document
-    .getElementById('x-select')
-    .addEventListener('change', () =>
-      updateFields(validData),
-    );
-  document
-    .getElementById('y-select')
-    .addEventListener('change', () =>
-      updateFields(validData),
-    );
-  // Hover to clarify circles
-  document
-    .getElementById('setosa')
-    .addEventListener('mouseenter', () =>
-      hoverToMoreClarify('Iris-setosa'),
-    );
-  document
-    .getElementById('versicolor')
-    .addEventListener('mouseenter', () =>
-      hoverToMoreClarify('Iris-versicolor'),
-    );
-  document
-    .getElementById('virginica')
-    .addEventListener('mouseenter', () =>
-      hoverToMoreClarify('Iris-virginica'),
-    );
-  // Un-Hover to less clarify circles
-  document
-    .getElementById('setosa')
-    .addEventListener('mouseleave', () =>
-      unhoverToLessClarify('Iris-setosa'),
-    );
-  document
-    .getElementById('versicolor')
-    .addEventListener('mouseleave', () =>
-      unhoverToLessClarify('Iris-versicolor'),
-    );
-  document
-    .getElementById('virginica')
-    .addEventListener('mouseleave', () =>
-      unhoverToLessClarify('Iris-virginica'),
-    );
 });
