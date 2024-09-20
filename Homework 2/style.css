@@ -35,19 +35,64 @@ body {
 .tick line {
   fill: none;
   stroke: #ccc; /* Light grey for axis lines */
+  transition: 0.2s linear all;
 }
 
 .tick text {
   font-size: 16px;
   font-weight: bold;
   fill: #444;
+  cursor: pointer;
+  transition: 0.2s linear all;
+}
+
+.tick .selected-line {
+  stroke: darkgray; /* Change this color as needed */
+  stroke-width: 2px;
+  opacity: 0.8; /* Set line opacity */
+}
+
+.tick .selected-text {
+  fill: darkgray; /* Change text color to match the line */
+  opacity: 1; /* Set text opacity to fully visible */
+}
+
+.tick .hovered-line {
+  stroke: gray; /* Change this color as needed */
+  stroke-width: 3px;
+  opacity: 0.6; /* Slightly lower opacity for hover effect */
+}
+
+.tick .hovered-text {
+  fill: gray; /* Change text color to match the line */
+  opacity: 1; /* Keep text fully visible */
 }
 
 .axis-label {
   fill: black;
 }
 
+.selected {
+  font-weight: bold;
+  fill: red;
+}
+
 /* Legend */
 .legend text {
   font-size: 14px;
+  transition: 0.2s linear all;
+}
+
+.legend .selected-text {
+  opacity: 0.5;
+}
+
+
+/* Data Line */
+.data-line {
+  transition: 0.2s linear opacity;
+}
+
+.selected-data {
+  opacity: 1 !important;
 }
