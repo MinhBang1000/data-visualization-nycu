@@ -1,0 +1,53 @@
+/* Overall style */
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Arial', sans-serif; /* Use a clean, readable font */
+  background-color: #e5e5e5; /* Soft background to reduce contrast */
+  overflow: hidden;
+}
+
+.container {
+  height: 100vh;
+  background-color: #f8f9fa; /* Light background for the container */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* SVG */
+.canvas {
+  background-color: white;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add subtle shadow to the chart */
+  border-radius: 10px; /* Rounded corners */
+}
+
+/* Title */
+.title {
+  fill: #333333; /* Darker color for readability */
+  font-size: 16px;
+  font-weight: bold;
+  font-family: 'Georgia', serif; /* Elegant font for the title */
+}
+
+/* Axis */
+.tick line {
+  fill: none;
+  stroke: #ccc; /* Light grey for axis lines */
+}
+
+.tick text {
+  font-size: 16px;
+  font-weight: bold;
+  fill: #444;
+}
+
+.axis-label {
+  fill: black;
+}
+
+/* Legend */
+.legend text {
+  font-size: 14px;
+}

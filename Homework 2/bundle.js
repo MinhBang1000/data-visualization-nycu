@@ -9,6 +9,17 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./index.js":
+/*!******************!*\
+  !*** ./index.js ***!
+  \******************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _tools__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./tools */ \"./tools.js\");\nconst {\r\n  select,\r\n  csv,\r\n  scaleLinear,\r\n  extent,\r\n  axisLeft,\r\n  axisBottom,\r\n  format,\r\n  line\r\n} = d3\r\n\r\n;\r\n\r\nconst svg = select('svg');\r\n\r\nconst width = +svg.attr('width');\r\nconst height = +svg.attr('height');\r\n\r\nconst render = (data) => {\r\n  const colors = {\r\n    'Iris-setosa': '#3CB371',\r\n    'Iris-versicolor': '#FF6347',\r\n    'Iris-virginica': '#4B0082',\r\n  };\r\n  const title = `Parallel Coordinates Visualization of Sepal and Petal Dimensions Across Iris Species`;\r\n  const yAxisLabel = `Value`\r\n  const xAxisLabel = `Variable`\r\n  const margin = {\r\n    top: 100,\r\n    right: 80,\r\n    bottom: 100,\r\n    left: 100,\r\n  };\r\n  const innerWidth = width - margin.left - margin.right;\r\n  const innerHeight = height - margin.top - margin.bottom;\r\n  const dimensions = (0,_tools__WEBPACK_IMPORTED_MODULE_0__.extractKeys)(data)\r\n  const coordinate = (0,_tools__WEBPACK_IMPORTED_MODULE_0__.findMinMax)(data)\r\n  const yCoordinate = (0,_tools__WEBPACK_IMPORTED_MODULE_0__.findValues)(coordinate.min, coordinate.max, 1)\r\n  const xCoordinate = (0,_tools__WEBPACK_IMPORTED_MODULE_0__.findValues)(0, dimensions.length - 1, 1)\r\n\r\n  const g = svg.append('g')\r\n    .attr('transform', `translate(${margin.left}, ${margin.top})`)\r\n\r\n  const xScale = scaleLinear()\r\n    .domain([0, dimensions.length - 1]) // The number of element in dimensions array\r\n    .range([50, innerWidth - 150])\r\n\r\n  const yScale = {} // Should be a dictionary of scaleLinear objects\r\n  dimensions?.forEach((dim) => {\r\n    yScale[dim] = scaleLinear()\r\n      .domain([coordinate.min, coordinate.max])\r\n      .range([innerHeight, 0])\r\n      .nice()\r\n  })\r\n\r\n  // Draw one y-axis + multiple x-axis\r\n  const firstDimension = dimensions[0]\r\n  const axisLeftConfig = axisLeft(yScale[firstDimension])\r\n    .tickPadding(10)\r\n    .tickSize(-innerWidth + 100)\r\n    .tickValues(yCoordinate)\r\n\r\n  const yAxisG = g.append('g')\r\n    .attr('transform', `translate(0, 0)`)\r\n    .call(axisLeftConfig)\r\n\r\n  yAxisG\r\n    .append('text')\r\n    .attr('class', 'axis-label')\r\n    .attr('y', -40)\r\n    .attr('x', 10)\r\n    .attr('transform', `rotate(-90)`)\r\n    .attr('text-anchor', 'middle')\r\n    .text(yAxisLabel);\r\n\r\n  const axisBottomConfig = axisBottom(xScale)\r\n    .tickPadding(20)\r\n    .tickSize(-innerHeight)\r\n    .tickValues(xCoordinate)\r\n    .tickFormat((d, i) => dimensions[i])\r\n\r\n  // At the bottom\r\n  const xAxisG = g.append('g')\r\n    .attr('transform', `translate(0, ${yScale[firstDimension](coordinate.min)})`)\r\n    .call(axisBottomConfig)\r\n\r\n  xAxisG\r\n    .append('text')\r\n    .attr('class', 'axis-label')\r\n    .attr('y', 60)\r\n    .attr('x', innerWidth - 100)\r\n    .text(xAxisLabel);\r\n\r\n  // Remove domain\r\n  xAxisG.selectAll('.domain').remove()\r\n  yAxisG.selectAll('.domain').remove()\r\n\r\n  // Create a legend\r\n  const species = Object.keys(colors)\r\n  const legendG = g.append('g')\r\n    .attr('class', 'legend')\r\n    .attr('transform', `translate(${innerWidth - 50}, ${innerHeight / 2})`)\r\n\r\n  legendG.append('text')\r\n    .attr('class', 'legend-label')\r\n    .attr('y', -20)\r\n    .attr('x', 0)\r\n    .text(\"Species\");\r\n  species.forEach((sp, i) => {\r\n    const legendRowG = legendG.append('g')\r\n      .attr('transform',`translate(0, ${i * 20})`)\r\n    \r\n    legendRowG.append('rect')\r\n      .attr('width', 10)\r\n      .attr('height', 3)\r\n      .attr('fill', colors[sp])\r\n    \r\n    legendRowG.append('text')\r\n      .attr('x', 15)\r\n      .attr('y', 5)\r\n      .text((0,_tools__WEBPACK_IMPORTED_MODULE_0__.replaceHyphenWithSpace)(sp))\r\n  })\r\n\r\n\r\n  // Draw some lines\r\n  const lineGenerator = line()\r\n    .x((d, i) => xScale(i))\r\n    .y((d, i) => yScale[dimensions[i]](d))\r\n\r\n  g.selectAll('path')\r\n    .data(data)\r\n    .enter()\r\n    .append('path')\r\n    .attr('fill', 'none')\r\n    .attr('class', 'data-line')\r\n    .attr('stroke', d => colors[d['class']])\r\n    .attr('stroke-width', 2)\r\n    .attr('opcity', 0)\r\n    .style('opacity', 0)\r\n    .transition()\r\n    .duration(1000)\r\n    .style('opacity', 0.3)\r\n    .attr('d', d => lineGenerator(dimensions.map(dim => d[dim])))\r\n\r\n  // Title\r\n  g.append('text')\r\n    .attr('class', 'title')\r\n    .attr('y', -40)\r\n    .text(title);\r\n};\r\n\r\nconst updateFields = (data) => {\r\n  render(data);\r\n};\r\n\r\n\r\n\r\ncsv('data.csv').then((data) => {\r\n  data.forEach((d) => {\r\n    d['sepal length'] = +d['sepal length'];\r\n    d['sepal width'] = +d['sepal width'];\r\n    d['petal length'] = +d['petal length'];\r\n    d['petal width'] = +d['petal width'];\r\n  });\r\n  const validData = data.filter(\r\n    (d) =>\r\n      !isNaN(d['sepal length']) &&\r\n      !isNaN(d['sepal width']) &&\r\n      !isNaN(d['petal length']) &&\r\n      !isNaN(d['sepal width']),\r\n  );\r\n  updateFields(validData);\r\n});\r\n\n\n//# sourceURL=webpack://homework-2/./index.js?");
+
+/***/ }),
+
 /***/ "./node_modules/ansi-html-community/index.js":
 /*!***************************************************!*\
   !*** ./node_modules/ansi-html-community/index.js ***!
@@ -299,6 +310,17 @@ eval("/*\n\tMIT License http://www.opensource.org/licenses/mit-license.php\n\tAu
 
 eval("/** @typedef {\"info\" | \"warning\" | \"error\"} LogLevel */\n\n/** @type {LogLevel} */\nvar logLevel = \"info\";\n\nfunction dummy() {}\n\n/**\n * @param {LogLevel} level log level\n * @returns {boolean} true, if should log\n */\nfunction shouldLog(level) {\n\tvar shouldLog =\n\t\t(logLevel === \"info\" && level === \"info\") ||\n\t\t([\"info\", \"warning\"].indexOf(logLevel) >= 0 && level === \"warning\") ||\n\t\t([\"info\", \"warning\", \"error\"].indexOf(logLevel) >= 0 && level === \"error\");\n\treturn shouldLog;\n}\n\n/**\n * @param {(msg?: string) => void} logFn log function\n * @returns {(level: LogLevel, msg?: string) => void} function that logs when log level is sufficient\n */\nfunction logGroup(logFn) {\n\treturn function (level, msg) {\n\t\tif (shouldLog(level)) {\n\t\t\tlogFn(msg);\n\t\t}\n\t};\n}\n\n/**\n * @param {LogLevel} level log level\n * @param {string|Error} msg message\n */\nmodule.exports = function (level, msg) {\n\tif (shouldLog(level)) {\n\t\tif (level === \"info\") {\n\t\t\tconsole.log(msg);\n\t\t} else if (level === \"warning\") {\n\t\t\tconsole.warn(msg);\n\t\t} else if (level === \"error\") {\n\t\t\tconsole.error(msg);\n\t\t}\n\t}\n};\n\nvar group = console.group || dummy;\nvar groupCollapsed = console.groupCollapsed || dummy;\nvar groupEnd = console.groupEnd || dummy;\n\nmodule.exports.group = logGroup(group);\n\nmodule.exports.groupCollapsed = logGroup(groupCollapsed);\n\nmodule.exports.groupEnd = logGroup(groupEnd);\n\n/**\n * @param {LogLevel} level log level\n */\nmodule.exports.setLogLevel = function (level) {\n\tlogLevel = level;\n};\n\n/**\n * @param {Error} err error\n * @returns {string} formatted error\n */\nmodule.exports.formatError = function (err) {\n\tvar message = err.message;\n\tvar stack = err.stack;\n\tif (!stack) {\n\t\treturn message;\n\t} else if (stack.indexOf(message) < 0) {\n\t\treturn message + \"\\n\" + stack;\n\t}\n\treturn stack;\n};\n\n\n//# sourceURL=webpack://homework-2/./node_modules/webpack/hot/log.js?");
 
+/***/ }),
+
+/***/ "./tools.js":
+/*!******************!*\
+  !*** ./tools.js ***!
+  \******************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   extractKeys: () => (/* binding */ extractKeys),\n/* harmony export */   findMinMax: () => (/* binding */ findMinMax),\n/* harmony export */   findValues: () => (/* binding */ findValues),\n/* harmony export */   replaceHyphenWithSpace: () => (/* binding */ replaceHyphenWithSpace)\n/* harmony export */ });\nconst extractKeys = (data) => {\r\n    const exampleObject = data[0]\r\n    const keys = Object.keys(exampleObject)\r\n    const dimensions = keys.filter(k => k !== 'class')\r\n    return dimensions\r\n}\r\n\r\nconst findMinMax = (data) => {\r\n    const exampleObject = data[0]\r\n    const keys = Object.keys(exampleObject)\r\n    const dimensions = keys.filter(k => k !== 'class')\r\n\r\n    let min = data[0][dimensions[0]]\r\n    let max = data[0][dimensions[0]]\r\n    data.forEach((d) => {\r\n        dimensions.forEach((dim) => {\r\n            min = min < d[dim] ? min : d[dim]\r\n        })\r\n        dimensions.forEach((dim) => {\r\n            max = max > d[dim] ? max : d[dim]\r\n        })\r\n    })\r\n    return {\r\n        max: Math.round(max),\r\n        min: Math.round(min)\r\n    }\r\n}\r\n\r\nconst findValues = (a,b,duration) => {\r\n    const values = []\r\n    const tempDura = duration\r\n    for (let i = a; i <= b; i++){\r\n        if (duration === 0 || i === a) {\r\n            values.push(i)\r\n            duration = tempDura\r\n        }\r\n        duration--\r\n    }\r\n    return values\r\n}\r\n\r\nconst replaceHyphenWithSpace = (str) => {\r\n    return str.replace(/-/g, ' ');\r\n}\n\n//# sourceURL=webpack://homework-2/./tools.js?");
+
 /***/ })
 
 /******/ 	});
@@ -380,7 +402,7 @@ eval("/** @typedef {\"info\" | \"warning\" | \"error\"} LogLevel */\n\n/** @type
 /******/ 	
 /******/ 	/* webpack/runtime/getFullHash */
 /******/ 	(() => {
-/******/ 		__webpack_require__.h = () => ("ef497b3a63930e4c4bf3")
+/******/ 		__webpack_require__.h = () => ("0fc12f69dfd308bb48e5")
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/global */
@@ -1389,7 +1411,8 @@ eval("/** @typedef {\"info\" | \"warning\" | \"error\"} LogLevel */\n\n/** @type
 /******/ 	// startup
 /******/ 	// Load entry module and return exports
 /******/ 	__webpack_require__("./node_modules/webpack-dev-server/client/index.js?protocol=ws%3A&hostname=0.0.0.0&port=8080&pathname=%2Fws&logging=info&overlay=true&reconnect=10&hot=true&live-reload=true");
-/******/ 	var __webpack_exports__ = __webpack_require__("./node_modules/webpack/hot/dev-server.js");
+/******/ 	__webpack_require__("./node_modules/webpack/hot/dev-server.js");
+/******/ 	var __webpack_exports__ = __webpack_require__("./index.js");
 /******/ 	
 /******/ })()
 ;
