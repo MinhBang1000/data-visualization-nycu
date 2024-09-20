@@ -6,7 +6,9 @@ const {
   axisLeft,
   axisBottom,
   format,
-  line
+  line,
+  mouse,
+  transition
 } = d3
 
 import { extractKeys, findMinMax, findValues, replaceHyphenWithSpace } from "./tools"
@@ -16,7 +18,7 @@ const svg = select('svg');
 const width = +svg.attr('width');
 const height = +svg.attr('height');
 
-const render = (data) => {
+const render = (data, dimensions) => {
   const colors = {
     'Iris-setosa': '#3CB371',
     'Iris-versicolor': '#FF6347',
@@ -31,9 +33,8 @@ const render = (data) => {
     bottom: 100,
     left: 100,
   };
-  const innerWidth = width - margin.left - margin.right;
-  const innerHeight = height - margin.top - margin.bottom;
-  const dimensions = extractKeys(data)
+  const innerWidth = width - margin.left - margin.right
+  const innerHeight = height - margin.top - margin.bottom
   const coordinate = findMinMax(data)
   const yCoordinate = findValues(coordinate.min, coordinate.max, 1)
   const xCoordinate = findValues(0, dimensions.length - 1, 1)
@@ -95,6 +96,29 @@ const render = (data) => {
   xAxisG.selectAll('.domain').remove()
   yAxisG.selectAll('.domain').remove()
 
+
+
+
+  // Draw some lines
+  const lineGenerator = line()
+    .x((d, i) => xScale(i))
+    .y((d, i) => yScale[dimensions[i]](d))
+
+  g.selectAll('path')
+    .data(data)
+    .enter()
+    .append('path')
+    .attr('fill', 'none')
+    .attr('class', d => `${d['class']} data-line`)
+    .attr('stroke', d => colors[d['class']])
+    .attr('stroke-width', 2)
+    .style('opacity', 0)
+    .transition()
+    .duration(500)
+    .style('opacity', 0.3)
+    .attr('d', d => lineGenerator(dimensions.map(dim => d[dim])))
+
+
   // Create a legend
   const species = Object.keys(colors)
   const legendG = g.append('g')
@@ -108,52 +132,73 @@ const render = (data) => {
     .text("Species");
   species.forEach((sp, i) => {
     const legendRowG = legendG.append('g')
-      .attr('transform',`translate(0, ${i * 20})`)
-    
+      .attr('transform', `translate(0, ${i * 20})`)
+      .style('cursor', 'pointer')
+
     legendRowG.append('rect')
       .attr('width', 10)
       .attr('height', 3)
       .attr('fill', colors[sp])
-    
+
     legendRowG.append('text')
       .attr('x', 15)
       .attr('y', 5)
       .text(replaceHyphenWithSpace(sp))
+
+    legendRowG
+      .on('mouseenter', function (event, d) {
+        select(this).select('text').classed('selected-text', true)
+        g.selectAll(`.${sp}`).classed('selected-data', true)
+      })
+      .on('mouseleave', function (event, d) {
+        select(this).select('text').classed('selected-text', false)
+        g.selectAll(`.${sp}`).classed('selected-data', false)
+      })
   })
-
-
-  // Draw some lines
-  const lineGenerator = line()
-    .x((d, i) => xScale(i))
-    .y((d, i) => yScale[dimensions[i]](d))
-
-  g.selectAll('path')
-    .data(data)
-    .enter()
-    .append('path')
-    .attr('fill', 'none')
-    .attr('class', 'data-line')
-    .attr('stroke', d => colors[d['class']])
-    .attr('stroke-width', 2)
-    .attr('opcity', 0)
-    .style('opacity', 0)
-    .transition()
-    .duration(1000)
-    .style('opacity', 0.3)
-    .attr('d', d => lineGenerator(dimensions.map(dim => d[dim])))
-
   // Title
   g.append('text')
     .attr('class', 'title')
     .attr('y', -40)
     .text(title);
+
+  let selectedDim = null
+
+  // Click and hover
+  xAxisG.selectAll('.tick')
+    .on('mouseenter', function (event, d) {
+      select(this).select('line').classed('hovered-line', true)
+      select(this).select('text').classed('hovered-text', true)
+    })
+    .on('mouseleave', function (event, d) {
+      select(this).select('line').classed('hovered-line', false)
+      select(this).select('text').classed('hovered-text', false)
+    })
+
+  xAxisG.selectAll('.tick')
+    .on('click', function (event, d) {
+      select(this).select('line').classed('selected-line', false)
+      select(this).select('text').classed('selected-text', false)
+      if (!selectedDim && selectedDim !== 0) {
+        selectedDim = d
+        select(this).select('line').classed('selected-line', true)
+        select(this).select('text').classed('selected-text', true)
+      } else {
+        const tempDim = dimensions[selectedDim]
+        dimensions[selectedDim] = dimensions[d]
+        dimensions[d] = tempDim
+        selectedDim = null
+        updateFields(data, dimensions)
+      }
+    })
 };
 
-const updateFields = (data) => {
-  render(data);
+const updateFields = (data, dimensions = null) => {
+  if (!dimensions) {
+    dimensions = extractKeys(data)
+  }
+  svg.selectAll('*').remove()
+  render(data, dimensions)
 };
-
-
 
 csv('data.csv').then((data) => {
   data.forEach((d) => {
