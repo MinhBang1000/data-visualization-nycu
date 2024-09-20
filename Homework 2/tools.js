@@ -38,3 +38,7 @@ export const findValues = (a,b,duration) => {
     }
     return values
 }
+
+export const replaceHyphenWithSpace = (str) => {
+    return str.replace(/-/g, ' ');
+}

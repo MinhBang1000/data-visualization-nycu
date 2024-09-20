@@ -9,7 +9,7 @@ const {
   line
 } = d3
 
-import { extractKeys, findMinMax, findValues } from "./tools"
+import { extractKeys, findMinMax, findValues, replaceHyphenWithSpace } from "./tools"
 
 const svg = select('svg');
 
@@ -118,7 +118,7 @@ const render = (data) => {
     legendRowG.append('text')
       .attr('x', 15)
       .attr('y', 5)
-      .text(sp)
+      .text(replaceHyphenWithSpace(sp))
   })
 
 
