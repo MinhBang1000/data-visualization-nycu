@@ -231,7 +231,7 @@ const updateFields = (data, dimensions = null) => {
   render(data, dimensions)
 };
 
-csv('http://vis.lab.djosix.com:2024/data/iris.csv').then((data) => {
+csv('data.csv').then((data) => {
   data.forEach((d) => {
     d['sepal length'] = +d['sepal length'];
     d['sepal width'] = +d['sepal width'];
