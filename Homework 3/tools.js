@@ -51,6 +51,7 @@ const caculateR = (keyX, keyY, data) => {
     // Calculate means
     const meanX = xValues.reduce((a, b) => a + b, 0) / xValues.length;
     const meanY = yValues.reduce((a, b) => a + b, 0) / yValues.length;
+    
 
     // Calculate the numerator and denominator for Pearson correlation
     let numerator = 0;

@@ -14,7 +14,7 @@ module.exports = {
     },
     devMiddleware: {
       writeToDisk: true, // Force writing to disk
-    },
+    }
   },
 };
 
