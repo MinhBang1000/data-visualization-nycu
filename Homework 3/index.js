@@ -283,7 +283,7 @@ const updateFields = (data) => {
 };
 
 
-text('abalone.data').then((data) => {
+text('http://vis.lab.djosix.com:2024/data/abalone.data').then((data) => {
   const parsedData = data.split('\n').map(row => {
     const columns = row.split(',');
     return {
