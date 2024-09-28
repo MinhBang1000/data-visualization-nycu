@@ -82,7 +82,6 @@ const heatmapCreate = (keys, data, edgeLength, title) => {
     const rect = select(this); // Select the current rect
     const x = parseFloat(rect.attr('x')) + xScale.bandwidth() / 2; // Center x
     const y = parseFloat(rect.attr('y')) + yScale.bandwidth() / 2; // Center y
-
     const color = d.r < 0.85 ? 'white' : 'black'
 
     // Append text
@@ -96,37 +95,34 @@ const heatmapCreate = (keys, data, edgeLength, title) => {
       .style('font-size', '10px') // Set the font size to a smaller value
       .text(d.r % 1 === 0 ? Math.round(d.r) : d3.format('.2f')(d.r)); // Display whole number or rounded value
 
-    // Adding class to hover color band
-    rect.classed('')
-    
     // Adding mouseenter and mouseleave function
-    rect.on('mouseenter', function() {
+    rect.on('mouseenter', function () {
       rectText.classed('data-rect-text-active', true)
       rect.classed('data-rect-active', true)
     })
 
-    rect.on('mouseleave', function() {
+    rect.on('mouseleave', function () {
       rectText.classed('data-rect-text-active', false)
       rect.classed('data-rect-active', false)
     })
 
-    rectText.on('mouseenter', function() {
+    rectText.on('mouseenter', function () {
       rectText.classed('data-rect-text-active', true)
       rect.classed('data-rect-active', true)
     })
 
-    rectText.on('mouseleave', function() {
+    rectText.on('mouseleave', function () {
       rectText.classed('data-rect-text-active', false)
       rect.classed('data-rect-active', false)
     })
 
     // Adding mouseclick
-    rect.on('click', function() {
+    rect.on('click', function () {
       const flag = rectText.classed('data-rect-text-clicked')
       rectText.classed('data-rect-text-clicked', !flag)
     })
 
-    rectText.on('click', function() {
+    rectText.on('click', function () {
       const flag = rectText.classed('data-rect-text-clicked')
       rectText.classed('data-rect-text-clicked', !flag)
     })
@@ -136,55 +132,83 @@ const heatmapCreate = (keys, data, edgeLength, title) => {
     .attr('class', 'h2-title')
     .attr('y', -10)
     .text(title);
+
+  g.style('opacity', 0)
+    .transition()
+    .duration(1000)
+    .style('opacity', 1)
+
   return g
 }
 
-const colorNoticeCreate = (colors, size) => {  
-  const g = select('svg').append('g')
+const colorNoticeCreate = (colors, size) => {
+  const g = select('svg').append('g');
+
+  // Create the gradient definition
+  const defs = g.append('defs');
+  const linearGradient = defs.append('linearGradient')
+    .attr('id', 'colorGradient')
+    .attr('x1', '0%')
+    .attr('y1', '0%')
+    .attr('x2', '100%')
+    .attr('y2', '0%'); // Horizontal gradient
+
+  // Define the color stops based on the provided colors
+  const stops = [-1, -0.5, 0, 0.5, 1];
+  stops.forEach((stopValue, index) => {
+    linearGradient.append('stop')
+      .attr('offset', `${((index) / (stops.length - 1)) * 100}%`) // Calculate percentage offset
+      .style('stop-color', colors[index])
+      .style('stop-opacity', 1);
+  });
+
   const xScale = scaleLinear()
     .domain([-1, 1])
-    .range([0, size])
+    .range([0, size]);
+
   const axisConfig = axisBottom(xScale)
     .tickValues([-1, -0.5, 0, 0.5, 1])  // Specify the tick values
     .tickFormat(d3.format(".1f"));       // Format to display one decimal place
+
   const axisG = g.append('g')
     .attr('class', 'color-axis')
     .call(axisConfig);
 
-  let i = -1.5
-  const parsedColors = colors.map(c => {
-    i+=0.5;
-    return {
-      color: c,
-      key: i
-    }
-  })
-  
-  axisG.selectAll('.tick line').remove()
-  axisG.selectAll('.domain').remove()
-  
-  const rects = g.selectAll('rect')
-    .data(parsedColors)
-    .enter()
-    .append('rect')
-    .attr('class', 'color-rect')
-    .attr('x', c => xScale(c.key))
-    .attr('y', -10)
-    .attr('width', size / 4)
-    .attr('height', 15)
-    .attr('fill', (c) => c.color)
+  axisG.selectAll('.tick line').remove();
+  axisG.selectAll('.domain').remove();
 
-  
-  return g
-}
+  // Use the gradient for the rectangle fill
+  const rect = g.append('rect')
+    .attr('class', 'color-rect')
+    .attr('x', 0)
+    .attr('y', -12)
+    .attr('width', size)
+    .attr('height', 15)
+    .attr('fill', 'url(#colorGradient)'); // Use the gradient
+
+  // Title
+  const title = g.append('text')
+    .attr('class', 'h2-title-color')
+    .attr('x', 0)
+    .attr('y', -25)
+    .text("Value Scale")
+
+
+  g.style('opacity', 0)
+    .transition()
+    .duration(1000)
+    .style('opacity', 1)
+
+  return g;
+};
 
 
 const render = (data) => {
-  
+
   // Introduction
   const title = `Correlation Matrices of Abalone Attributes: A Comparative Analysis of Male, Female, and Infant Categories`;
   const names = ["Male Abalone", "Female Abalone", "Infant Abalone"]
-  
+
   // Layout
   const margin = {
     top: 80,
@@ -200,7 +224,7 @@ const render = (data) => {
   }
 
   // Prepare the data
-  const edgeLength = 300
+  const edgeLength = 250
   const maleData = []
   const femaleData = []
   const infantData = []
@@ -227,29 +251,30 @@ const render = (data) => {
 
   // Male heatmap
   const g0 = heatmapCreate(keys, male, edgeLength, names[0])
-  g0.attr('transform', `translate(${margin.left}, ${margin.top + 2*gap.top})`)
+  g0.attr('transform', `translate(${margin.left + 90}, ${margin.top + 2 * gap.top})`)
 
 
   // Female heatmap
   const g1 = heatmapCreate(keys, female, edgeLength, names[1])
-  g1.attr('transform', `translate(${margin.left + 400}, ${margin.top + 2*gap.top})`)
+  g1.attr('transform', `translate(${margin.left + 445}, ${margin.top + 2 * gap.top})`)
 
   // Infant heatmap
   const g2 = heatmapCreate(keys, infant, edgeLength, names[2])
-  g2.attr('transform', `translate(${margin.left + 800}, ${margin.top + 2*gap.top})`)
-
-  svg.selectAll('.h2-title')
-    .attr('x', 5*gap.left)
+  g2.attr('transform', `translate(${margin.left + 800}, ${margin.top + 2 * gap.top})`)
 
   svg.append('text')
     .attr('class', 'title')
     .attr('y', margin.top - 10)
     .attr('x', margin.left)
     .text(title)
-  
+    .style('opacity', 0)
+    .transition()
+    .duration(1000)
+    .style('opacity', 1)
+
   // Color band
-  const cG = colorNoticeCreate(["#000814", "#001d3d", "#001d3d", "#003566", "#90e0ef"], 800)
-  cG.attr('transform', `translate(${margin.left + 1*gap.left}, ${height - 70})`)
+  const cG = colorNoticeCreate(["#000814", "#001d3d", "#001d3d", "#003566", "#90e0ef"], 500)
+  cG.attr('transform', `translate(${margin.left + 274}, ${height - 60})`)
 };
 
 const updateFields = (data) => {

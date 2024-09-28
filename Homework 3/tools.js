@@ -93,3 +93,24 @@ export const findR = (data, keys) => {
     }
     return arr; // Return the object containing correlation coefficients
 };
+
+
+export const createClassname = (value) => {
+    if (value < -1 || value > 1) {
+        return 'F'
+    }
+    // [-1, -0.5]
+    if (value <= -0.5) {
+        return 'A' 
+    }
+    // (-0.5, 0]
+    if (value <= 0) {
+        return 'B'
+    }
+    // (0, 0.5]
+    if (value <= 0.5) {
+        return 'C'
+    }
+    // (0.5, 1]
+    return 'D'
+}
