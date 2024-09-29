@@ -114,3 +114,7 @@ export const createClassname = (value) => {
     // (0.5, 1]
     return 'D'
 }
+
+export const percentOf = (value, percent) => {
+    return percent * value
+}

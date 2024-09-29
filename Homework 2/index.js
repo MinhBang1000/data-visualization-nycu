@@ -47,8 +47,6 @@ const render = (data, dimensions) => {
     '- Hover over a species to highlight it'
   ]
 
-
-
   const xScale = scaleLinear()
     .domain([0, dimensions.length - 1]) // The number of element in dimensions array
     .range([50, innerWidth - 150])
