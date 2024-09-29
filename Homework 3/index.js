@@ -13,12 +13,32 @@ const {
   scaleBand
 } = d3
 
-import { extractKeys, findMinMax, findR, findValues, replaceHyphenWithSpace } from "./tools"
+import { extractKeys, percentOf, findR } from "./tools"
 
-const svg = select('svg');
+// Get started by setting up
+const title = `Exploring Abalone Attributes: Correlation Matrices for Males, Females, and Infants`;
+const names = ["Male Abalone", "Female Abalone", "Infant Abalone"]
 
-const width = +svg.attr('width');
-const height = +svg.attr('height');
+// Layout
+const margin = {
+  top: 64,
+  right: 64,
+  bottom: 64,
+  left: 40,
+};
+const gap = {
+  top: 20,
+  bottom: 20,
+  left: 20,
+  right: 20
+}
+
+const svg = select('svg')
+
+const width = 900;
+const height = 600;
+const innerWidth = width - margin.left - margin.right
+const innerHeight = height - margin.top - margin.bottom
 
 
 const heatmapCreate = (keys, data, edgeLength, title) => {
@@ -26,8 +46,8 @@ const heatmapCreate = (keys, data, edgeLength, title) => {
   for (let i = keys.length - 1; i >= 0; i--) {
     inversedKeys.push(keys[i])
   }
-  // Container Group 0 - Male
   const g = select('svg').append('g')
+
   // Build the axis and scale axis - X axis
   const xScale = scaleBand()
     .domain(keys.filter(k => k !== 'Sex'))
@@ -40,8 +60,10 @@ const heatmapCreate = (keys, data, edgeLength, title) => {
     .attr('transform', `translate(${0},${edgeLength})`)
     .call(xAxis)
   // Config the tick x-axis
+
   xAxisG.selectAll('.x-axis .tick text')
     .attr('x', -10)
+
   // Y - axis
   const yScale = scaleBand()
     .domain(inversedKeys.filter(k => k !== 'Sex'))
@@ -200,86 +222,91 @@ const colorNoticeCreate = (colors, size) => {
     .style('opacity', 1)
 
   return g;
-};
+}
+
+const noteCreate = (notes) => {
+  const noteG = select('svg').append('g')
+  noteG.append('text')
+    .attr('class', 'note-label')
+    .attr('x', 0)
+    .attr('y', 0)
+    .text('Notices')
+
+  notes.forEach((note, i) => {
+    const index = i + 1
+    noteG.append('text')
+      .attr('class', 'note-label-item')
+      .attr('x', 0)
+      .attr('y', 20 * index)
+      .text(note)
+  })
+  return noteG
+}
 
 
-const render = (data) => {
-
-  // Introduction
-  const title = `Correlation Matrices of Abalone Attributes: A Comparative Analysis of Male, Female, and Infant Categories`;
-  const names = ["Male Abalone", "Female Abalone", "Infant Abalone"]
-
-  // Layout
-  const margin = {
-    top: 80,
-    right: 100,
-    bottom: 80,
-    left: 100,
-  };
-  const gap = {
-    top: 20,
-    bottom: 20,
-    left: 20,
-    right: 20
-  }
-
+const render = (processData, keys) => {
   // Prepare the data
-  const edgeLength = 250
-  const maleData = []
-  const femaleData = []
-  const infantData = []
-  const keys = extractKeys(data)
   const inversedKeys = new Array()
   for (let i = keys.length - 1; i >= 0; i--) {
     inversedKeys.push(keys[i])
   }
-  const allData = data.filter(d => isNaN(d?.Sex))
-  allData.forEach((d) => {
-    if (d?.Sex === 'M') {
-      maleData.push(d)
-    } else if (d?.Sex === 'F') {
-      femaleData.push(d)
-    } else if (d?.Sex === 'I') {
-      infantData.push(d)
-    }
-  })
-  const all = findR(allData, keys)
-  const male = findR(maleData, keys)
-  const female = findR(femaleData, keys)
-  const infant = findR(infantData, keys)
+  const edgeLength = 220
 
+  // Location of group containers + title + colorband
+  const spaceBetween = percentOf(innerWidth, 8.5 / 100)
+  const matrixSpace = percentOf(innerWidth, 24 / 100)
+  const axisSpace = percentOf(innerWidth, 11 / 100)
+  const g0X = margin.left + axisSpace
+  const g1X = spaceBetween + matrixSpace + g0X
+  const g2X = spaceBetween + matrixSpace + g1X
+  const verticalSpace = 80
+  const containerVerticalSpace = margin.top + verticalSpace - 10
+  const colorBandX = margin.left + percentOf(innerWidth, 50 / 100) + spaceBetween - 36
+  const colorBandY = margin.top + 12 + verticalSpace + 20 + percentOf(innerHeight, 11 / 100) + matrixSpace + verticalSpace + 20
+  const noteX = margin.left
+  const noteY = colorBandY - 24
 
-  // Male heatmap
-  const g0 = heatmapCreate(keys, male, edgeLength, names[0])
-  g0.attr('transform', `translate(${margin.left + 90}, ${margin.top + 2 * gap.top})`)
-
-
-  // Female heatmap
-  const g1 = heatmapCreate(keys, female, edgeLength, names[1])
-  g1.attr('transform', `translate(${margin.left + 445}, ${margin.top + 2 * gap.top})`)
-
-  // Infant heatmap
-  const g2 = heatmapCreate(keys, infant, edgeLength, names[2])
-  g2.attr('transform', `translate(${margin.left + 800}, ${margin.top + 2 * gap.top})`)
-
+  // Title
   svg.append('text')
     .attr('class', 'title')
-    .attr('y', margin.top - 10)
+    .attr('y', margin.top)
     .attr('x', margin.left)
     .text(title)
     .style('opacity', 0)
     .transition()
     .duration(1000)
-    .style('opacity', 1)
+    .style('opacity', 1);
+
+  // Male heatmap
+  const g0 = heatmapCreate(keys, processData[0], edgeLength, names[0])
+  g0.attr('transform', `translate(${g0X}, ${containerVerticalSpace})`)
+
+  // Female heatmap
+  const g1 = heatmapCreate(keys, processData[1], edgeLength, names[1])
+  g1.attr('transform', `translate(${g1X}, ${containerVerticalSpace})`)
+  g1.selectAll(".y-axis .tick text").remove()
+
+  // Infant heatmap
+  const g2 = heatmapCreate(keys, processData[2], edgeLength, names[2])
+  g2.attr('transform', `translate(${g2X}, ${containerVerticalSpace})`)
+  g2.selectAll(".y-axis .tick text").remove()
+
+  // Notes
+  const notes = [
+    '- Click on a cell to toggle the visibility of its value (show/hide).',
+    '- Hover over a cell to display its value and highlight the cell.'
+  ];
+  const noteG = noteCreate(notes)
+  noteG.attr('transform', `translate(${noteX}, ${noteY})`)
 
   // Color band
-  const cG = colorNoticeCreate(["#000814", "#001d3d", "#001d3d", "#003566", "#90e0ef"], 500)
-  cG.attr('transform', `translate(${margin.left + 274}, ${height - 60})`)
+  const cG = colorNoticeCreate(["#000814", "#001d3d", "#001d3d", "#003566", "#90e0ef"], percentOf(innerWidth, 50 / 100))
+  cG.attr('transform', `translate(${colorBandX}, ${colorBandY})`)
 };
 
-const updateFields = (data) => {
+const updateFields = (processData, keys) => {
   svg.selectAll('*').remove()
-  render(data)
+  render(processData, keys)
 };
 
 
@@ -298,5 +325,27 @@ text('http://vis.lab.djosix.com:2024/data/abalone.data').then((data) => {
       'Rings': +columns[8]                    // Column 9: Rings
     };
   })
-  updateFields(parsedData)
+
+  // Assuming the data
+  const maleData = []
+  const femaleData = []
+  const infantData = []
+  const keys = extractKeys(parsedData)
+  const allData = parsedData.filter(d => isNaN(d?.Sex))
+  allData.forEach((d) => {
+    if (d?.Sex === 'M') {
+      maleData.push(d)
+    } else if (d?.Sex === 'F') {
+      femaleData.push(d)
+    } else if (d?.Sex === 'I') {
+      infantData.push(d)
+    }
+  })
+  const male = findR(maleData, keys)
+  const female = findR(femaleData, keys)
+  const infant = findR(infantData, keys)
+  const processData = [
+    [...male], [...female], [...infant]
+  ]
+  updateFields(processData, keys)
 })

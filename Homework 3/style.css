@@ -1,7 +1,11 @@
 /* Overall style */
-body {
-  padding: 0;
+
+* {
   margin: 0;
+  padding: 0;
+}
+
+body, html {
   font-family: 'Arial', sans-serif; /* Use a clean, readable font */
   background-color: #e5e5e5; /* Soft background to reduce contrast */
   overflow: hidden;
@@ -25,11 +29,12 @@ body {
 /* Title */
 .title {
   fill: #333333; /* Darker color for readability */
-  font-size: 20px;
+  font-size: 19px;
   font-weight: bold;
+  font-family: 'Georgia', serif; /* Elegant font for the title */
 }
 /* Names */
-.h2-title {
+.h2-title, .note-label {
   fill: #333333; /* Darker color for readability */
   font-size: 14px;
   font-weight: bold;
@@ -81,4 +86,11 @@ body {
 /* Clicked */
 .data-rect-text-clicked {
   opacity: 1;
+}
+
+
+/* Note */
+.note-label-item {
+  fill: black;
+  font-size: 12px;
 }
