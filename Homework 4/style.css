@@ -1,0 +1,34 @@
+/* Overral style */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    font-family: 'Arial', sans-serif; /* Use a clean, readable font */
+    background-color: #f8f9fa; /* Light background for the container */
+    overflow: hidden;
+}
+.container-fluid {
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+}
+
+/* SVG canvas */
+.canvas {
+    background-color: white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add subtle shadow to the chart */
+}
+
+/* Axis */
+.s-axis-left text{
+    transform: rotate(-90deg);
+    text-anchor: middle;
+}
+
+.s-axis-bottom text {
+    text-anchor: middle;
+}
+/* Data */
