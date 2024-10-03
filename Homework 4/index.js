@@ -27,7 +27,7 @@ const gap = 10
 const svg = select('svg')
 const width = +svg.attr('width')
 const height = +svg.attr('height')
-const innerWidth = width - margin.left - margin.right
+const innerWidth = width - 100  - margin.left - margin.right
 const innerHeight = height - margin.top - margin.bottom
 let results = {}
 
@@ -197,6 +197,42 @@ const createSignificantAxisScaleConfig = (domain, range, padding = 0.2) => {
     return scaleConfig
 }
 
+const createLegend = () => {
+    const g = mainGroup.append('g')
+        .attr('class', 'legend')
+    const title = g.append('text')
+        .attr('class', 'legend-title')
+        .text('Species')
+        .attr('x', 0)
+        .attr('y', 0)
+    const gap = 25
+    const edge = 8
+    const keys = Object.keys(colors)
+    keys.forEach((c,i) => {
+        const legendRowG = g.append('g')
+            .attr('class','legend-group')
+            .attr('transform', `translate(${edge}, ${gap*(i+1)})`)
+        legendRowG.on('mouseenter', function(e){
+            select(this).classed('legend-group-active', true)
+            mainGroup.selectAll(`.${c}`)
+                .classed(`${c}-active`, true)
+        })    
+        legendRowG.on('mouseleave', function(e){
+            select(this).classed('legend-group-active', false)
+            mainGroup.selectAll(`.${c}`)
+                .classed(`${c}-active`, false)
+        })    
+        const circle = legendRowG.append('circle')
+            .attr('r', edge)
+            .attr('fill', colors[c])
+        const text = legendRowG.append('text')
+            .attr('x', 15)
+            .attr('y', 5)
+            .text(keys[i])
+    })
+    return g
+}
+
 const createScatterPlotOrHistogram = (data, key1, key2, subWidth, subHeight, radius = 5) => {
     // Provide g element
     const g = select('.main-group').append('g')
@@ -206,14 +242,6 @@ const createScatterPlotOrHistogram = (data, key1, key2, subWidth, subHeight, rad
     const data2 = data.map(d => d[key2])
     const domain1 = extent(data1)
     const domain2 = extent(data2)
-    // const domain1 = [
-    //     extent(data1)[0] >= justAGap ? extent(data1)[0] - justAGap : extent(data1)[0], 
-    //     extent(data1)[1] + justAGap
-    // ]
-    // const domain2 = [
-    //     extent(data2)[0] >= justAGap ? extent(data2)[0] - justAGap : extent(data2)[0], 
-    //     extent(data2)[1] + justAGap
-    // ]
     // Add the axis into right charts
     if (key1 !== key2) {
         // Draw all axis for a chart
@@ -292,12 +320,12 @@ const createScatterPlotOrHistogram = (data, key1, key2, subWidth, subHeight, rad
             .attr('stroke-width', 1); // Line width
 
         // Scatter Plot
-        g.selectAll('circle')
+        const circles = g.selectAll('circle')
             .data(data)
             .enter()
             .append('circle')
             .attr('class', d => {
-                return d["Class"]
+                return `${d["Class"]} data data-circle`
             })
             .attr('cx', d => xScaleConfig(d[key1]))
             .attr('cy', d => yScaleConfig(d[key2]))
@@ -306,18 +334,11 @@ const createScatterPlotOrHistogram = (data, key1, key2, subWidth, subHeight, rad
             .attr('stroke-width', 0.25)
             .attr('opacity', 0.75)
             .attr('fill', d => colors[d["Class"]])
-        // Remove axis to avoid redundant
-        // if (key1 !== "Sepal Length") {
-        //     yAxisG.selectAll('.tick text').remove()
-        // }
-        // if (key2 !== "Petal Width") {
-        //     xAxisG.selectAll('.tick text').remove()
-        // }
+        
+        // Add effects
+        
     } else {
         // Histogram
-        const setosa = data.filter(d => d["Class"] === 'Iris-setosa')
-        const versicolor = data.filter(d => d["Class"] === 'Iris-versicolor')
-        const virginica = data.filter(d => d["Class"] === 'Iris-virginica')
         // Get data key1 === key2
         const histogramData = results[key1]
         // Draw all axis for a chart
@@ -380,7 +401,7 @@ const createScatterPlotOrHistogram = (data, key1, key2, subWidth, subHeight, rad
             ]
             const output = getOrderedObjects(input)
             const column3 = g.append('line')
-                .attr('class', 'data-bar')
+                .attr('class', `data data-bar ${output[2].class}`)
                 .attr('x1', xScaleConfig(i) + xScaleConfig.bandwidth() / 2)
                 .attr('y1', yScaleConfig(output[2].value))
                 .attr('x2', xScaleConfig(i) + xScaleConfig.bandwidth() / 2)
@@ -388,7 +409,7 @@ const createScatterPlotOrHistogram = (data, key1, key2, subWidth, subHeight, rad
                 .attr('stroke', colors[output[2].class])
                 .attr('stroke-width', xScaleConfig.bandwidth())
             const column2 = g.append('line')
-                .attr('class', 'data-bar')
+                .attr('class', `data data-bar ${output[1].class}`)
                 .attr('x1', xScaleConfig(i) + xScaleConfig.bandwidth() / 2)
                 .attr('y1', yScaleConfig(output[1].value))
                 .attr('x2', xScaleConfig(i) + xScaleConfig.bandwidth() / 2)
@@ -396,7 +417,7 @@ const createScatterPlotOrHistogram = (data, key1, key2, subWidth, subHeight, rad
                 .attr('stroke', colors[output[1].class])
                 .attr('stroke-width', xScaleConfig.bandwidth())
             const column1 = g.append('line')
-                .attr('class', 'data-bar')
+                .attr('class', `data data-bar ${output[0].class}`)
                 .attr('x1', xScaleConfig(i) + xScaleConfig.bandwidth() / 2)
                 .attr('y1', yScaleConfig(output[0].value))
                 .attr('x2', xScaleConfig(i) + xScaleConfig.bandwidth() / 2)
@@ -438,11 +459,7 @@ const createScatterPlotOrHistogram = (data, key1, key2, subWidth, subHeight, rad
             .attr('y2', subHeight)       // Ending point y coordinate
             .attr('stroke', '#C1C1C1')   // Line color
             .attr('stroke-width', 1); // Line width
-
-
     }
-
-
     return g
 }
 
@@ -488,6 +505,9 @@ const render = (data) => {
             chartG.attr('transform', `translate(${xSAxisConfig(attributes[i])}, ${ySAxisConfig(attributes[j])})`)
         }
     }
+    // Add legend
+    const legendG = createLegend()
+    legendG.attr('transform', `translate(${innerWidth}, ${margin.right})`)
 }
 
 // Load data from dataset
