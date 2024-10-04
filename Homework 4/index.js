@@ -7,7 +7,10 @@ const {
     csv,
     axisBottom,
     axisLeft,
-    extent
+    extent,
+    histogram,
+    cross,
+    range
 } = d3
 
 
@@ -27,9 +30,16 @@ const gap = 10
 const svg = select('svg')
 const width = +svg.attr('width')
 const height = +svg.attr('height')
-const innerWidth = width - 100  - margin.left - margin.right
+const innerWidth = width - 100 - margin.left - margin.right
 const innerHeight = height - margin.top - margin.bottom
+
+// Data preparing
 let results = {}
+const IRIS_DATA = {
+    "Iris-virginica": [],
+    "Iris-setosa": [],
+    "Iris-versicolor": []
+}
 
 const mainGroup = svg.append('g')
     .attr('class', 'main-group')
@@ -91,9 +101,9 @@ const findPart = (value, boundaries) => {
 
 const createLogValueRange = (data) => {
     const keys = Object.keys(data[0])
-    const setosa = data.filter(d => d["Class"] === 'Iris-setosa')
-    const versicolor = data.filter(d => d["Class"] === 'Iris-versicolor')
-    const virginica = data.filter(d => d["Class"] === 'Iris-virginica')
+    const setosa = IRIS_DATA["Iris-setosa"]
+    const versicolor = IRIS_DATA["Iris-versicolor"]
+    const virginica = IRIS_DATA["Iris-virginica"]
     const results = {}
     keys.filter(k => k !== "Class").forEach(k => {
         const setosaValues = setosa.map(s => s[k])
@@ -189,7 +199,7 @@ const getOrderedObjects = (arr) => {
     return [first, second, third];
 }
 
-const createSignificantAxisScaleConfig = (domain, range, padding = 0.2) => {
+const createSignificantAxisScaleConfig = (domain, range, padding = 0.3) => {
     const scaleConfig = scaleBand()
         .domain(domain)
         .range(range)
@@ -208,20 +218,20 @@ const createLegend = () => {
     const gap = 25
     const edge = 8
     const keys = Object.keys(colors)
-    keys.forEach((c,i) => {
+    keys.forEach((c, i) => {
         const legendRowG = g.append('g')
-            .attr('class','legend-group')
-            .attr('transform', `translate(${edge}, ${gap*(i+1)})`)
-        legendRowG.on('mouseenter', function(e){
+            .attr('class', 'legend-group')
+            .attr('transform', `translate(${edge}, ${gap * (i + 1)})`)
+        legendRowG.on('mouseenter', function (e) {
             select(this).classed('legend-group-active', true)
             mainGroup.selectAll(`.${c}`)
                 .classed(`${c}-active`, true)
-        })    
-        legendRowG.on('mouseleave', function(e){
+        })
+        legendRowG.on('mouseleave', function (e) {
             select(this).classed('legend-group-active', false)
             mainGroup.selectAll(`.${c}`)
                 .classed(`${c}-active`, false)
-        })    
+        })
         const circle = legendRowG.append('circle')
             .attr('r', edge)
             .attr('fill', colors[c])
@@ -233,15 +243,13 @@ const createLegend = () => {
     return g
 }
 
-const createScatterPlotOrHistogram = (data, key1, key2, subWidth, subHeight, radius = 5) => {
-    // Provide g element
-    const g = select('.main-group').append('g')
-        .classed('chart-group', true)
+const createScatterPlotOrHistogram = (data, key1, key2, subWidth, subHeight, radius = 5, coordinates = { x0: 0, y0: 0 }) => {
     // Design chart
     const data1 = data.map(d => d[key1])
     const data2 = data.map(d => d[key2])
     const domain1 = extent(data1)
     const domain2 = extent(data2)
+
     // Add the axis into right charts
     if (key1 !== key2) {
         // Draw all axis for a chart
@@ -253,6 +261,7 @@ const createScatterPlotOrHistogram = (data, key1, key2, subWidth, subHeight, rad
             .domain(domain2)
             .range([subHeight, 0])
             .nice()
+
         // Choose ticks
         const numberOfTicksX = {
             "Sepal Length": 4,
@@ -266,248 +275,245 @@ const createScatterPlotOrHistogram = (data, key1, key2, subWidth, subHeight, rad
             "Petal Length": 3,
             "Petal Width": 3
         }
+
+        // Create axis 
         const xAxisConfig = axisBottom(xScaleConfig)
             .ticks(numberOfTicksX[key1])
         const yAxisConfig = axisLeft(yScaleConfig)
             .ticks(numberOfTicksY[key2])
-        const yAxisG = g.append('g')
-            .call(yAxisConfig)
-            .attr('transform', `translate(${0}, ${0})`)
-        const xAxisG = g.append('g')
-            .call(xAxisConfig)
-            .attr('transform', `translate(${0}, ${subHeight})`)
-        g.selectAll('.domain').remove()
-        // Edit ticks and create grid
-        yAxisG.selectAll(".tick line")
-            .attr('x2', subWidth)
-            .attr('stroke', '#D7D7D7')
-        xAxisG.selectAll(".tick line")
-            .attr('y2', -subHeight)
-            .attr('stroke', '#D7D7D7')
-        // Add four lines
-        // X Axis line
-        g.append('line')
-            .attr('x1', 0)         // Starting point x coordinate
-            .attr('y1', subHeight)         // Starting point y coordinate
-            .attr('x2', subWidth)       // Ending point x coordinate
-            .attr('y2', subHeight)       // Ending point y coordinate
-            .attr('stroke', '#C1C1C1')   // Line color
-            .attr('stroke-width', 1); // Line width
 
-        g.append('line')
-            .attr('x1', 0)         // Starting point x coordinate
-            .attr('y1', 0)         // Starting point y coordinate
-            .attr('x2', subWidth)       // Ending point x coordinate
-            .attr('y2', 0)       // Ending point y coordinate
-            .attr('stroke', '#C1C1C1')   // Line color
-            .attr('stroke-width', 1); // Line width
-
-        // Y Axis line
-        g.append('line')
-            .attr('x1', 0)         // Starting point x coordinate
-            .attr('y1', 0)         // Starting point y coordinate
-            .attr('x2', 0)       // Ending point x coordinate
-            .attr('y2', subHeight)       // Ending point y coordinate
-            .attr('stroke', '#C1C1C1')   // Line color
-            .attr('stroke-width', 1); // Line width
-
-        g.append('line')
-            .attr('x1', subWidth)         // Starting point x coordinate
-            .attr('y1', 0)         // Starting point y coordinate
-            .attr('x2', subWidth)       // Ending point x coordinate
-            .attr('y2', subHeight)       // Ending point y coordinate
-            .attr('stroke', '#C1C1C1')   // Line color
-            .attr('stroke-width', 1); // Line width
+        // Add to group
+        // mainGroup.append('g')
+        //     .call(yAxisConfig)
+        //     .attr('transform', `translate(${coordinates["x0"]}, ${coordinates["y0"]})`)
+        // mainGroup.append('g')
+        //     .call(xAxisConfig)
+        //     .attr('transform', `translate(${coordinates["x0"]}, ${coordinates["y0"] + subHeight})`)
 
         // Scatter Plot
-        const circles = g.selectAll('circle')
-            .data(data)
-            .enter()
+        // const circles = mainGroup.selectAll(`.circle-${key1}-${key2}`)
+        //     .data(data)
+
+        // circles.enter()
+        //     .append('circle')
+        //     .attr('class', d => {
+        //         return `${d["Class"]} data data-circle`
+        //     })
+        //     .attr('cx', d => coordinates["x0"] + xScaleConfig(d[key1]))
+        //     .attr('cy', d => coordinates["y0"] + yScaleConfig(d[key2]))
+        //     .attr('r', radius)
+        //     .attr('stroke', '#f2f2f2')
+        //     .attr('stroke-width', 0.25)
+        //     .attr('opacity', 0.75)
+        //     .attr('fill', d => colors[d["Class"]])
+
+        // // Remove old circles if any
+        // circles.exit().remove();
+        const circles = mainGroup.selectAll(`.circle-${key1}-${key2}`)
+            .data(data);
+
+        // Enter selection
+        const circlesEnter = circles.enter()
             .append('circle')
-            .attr('class', d => {
-                return `${d["Class"]} data data-circle`
-            })
-            .attr('cx', d => xScaleConfig(d[key1]))
-            .attr('cy', d => yScaleConfig(d[key2]))
+            .attr('class', d => `${d["Class"]} data data-circle`)
             .attr('r', radius)
             .attr('stroke', '#f2f2f2')
             .attr('stroke-width', 0.25)
             .attr('opacity', 0.75)
-            .attr('fill', d => colors[d["Class"]])
-        
-        // Add effects
-        
-    } else {
-        // Histogram
-        // Get data key1 === key2
-        const histogramData = results[key1]
-        // Draw all axis for a chart
-        const xScaleConfig = scaleBand()
-            .domain(Array.from({ length: 20 }, (_, i) => i.toString()))
-            .range([0, subWidth])
-        const yScaleConfig = scaleLinear()
-            .domain(histogramData.domain)
-            .range([subHeight, 0])
-            .nice()
-        const xScaleConfigAppear = scaleLinear()
-            .domain(domain1)
-            .range([0, subWidth])
-            .nice()
-        // Choose ticks
-        const numberOfTicksX = {
-            "Sepal Length": 4,
-            "Sepal Width": 3,
-            "Petal Length": 3,
-            "Petal Width": 3
-        }
-        const numberOfTicksY = {
-            "Sepal Length": 4,
-            "Sepal Width": 6,
-            "Petal Length": 3,
-            "Petal Width": 3
-        }
-        const xAxisConfig = axisBottom(xScaleConfigAppear)
-            .ticks(numberOfTicksX[key1])
-        const yAxisConfig = axisLeft(yScaleConfig)
-            .ticks(numberOfTicksY[key2])
-        const yAxisG = g.append('g')
-            .call(yAxisConfig)
-            .attr('transform', `translate(${0}, ${0})`)
-        const xAxisG = g.append('g')
-            .call(xAxisConfig)
-            .attr('transform', `translate(${0}, ${subHeight})`)
-        // Edit ticks and create grid
-        yAxisG.selectAll(".tick line")
-            .attr('x2', subWidth)
-            .attr('stroke', '#D7D7D7')
-        xAxisG.selectAll(".tick line")
-            .attr('y2', -subHeight)
-            .attr('stroke', '#D7D7D7')
+            .attr('fill', d => colors[d["Class"]]);
 
-        // Remove all domain
-        yAxisG.selectAll('.domain').remove()
-        xAxisG.selectAll('.domain').remove()
+        // Update selection
+        circles.merge(circlesEnter)
+            .attr('cx', d => coordinates["x0"] + xScaleConfig(d[key1]))
+            .attr('cy', d => coordinates["y0"] + yScaleConfig(d[key2]));
 
-        // Add data
-        const setosaData = histogramData.data["Iris-setosa"]
-        const virginicaData = histogramData.data["Iris-virginica"]
-        const versicolorData = histogramData.data["Iris-versicolor"]
+        // Exit selection
+        circles.exit().remove();
 
-        for (let i = 0; i < setosaData.length; i++) {
-            const input = [
-                { value: setosaData[i], class: 'Iris-setosa' },
-                { value: virginicaData[i], class: 'Iris-virginica' },
-                { value: versicolorData[i], class: 'Iris-versicolor' }
-            ]
-            const output = getOrderedObjects(input)
-            const column3 = g.append('line')
-                .attr('class', `data data-bar ${output[2].class}`)
-                .attr('x1', xScaleConfig(i) + xScaleConfig.bandwidth() / 2)
-                .attr('y1', yScaleConfig(output[2].value))
-                .attr('x2', xScaleConfig(i) + xScaleConfig.bandwidth() / 2)
-                .attr('y2', subHeight)
-                .attr('stroke', colors[output[2].class])
-                .attr('stroke-width', xScaleConfig.bandwidth())
-            const column2 = g.append('line')
-                .attr('class', `data data-bar ${output[1].class}`)
-                .attr('x1', xScaleConfig(i) + xScaleConfig.bandwidth() / 2)
-                .attr('y1', yScaleConfig(output[1].value))
-                .attr('x2', xScaleConfig(i) + xScaleConfig.bandwidth() / 2)
-                .attr('y2', subHeight)
-                .attr('stroke', colors[output[1].class])
-                .attr('stroke-width', xScaleConfig.bandwidth())
-            const column1 = g.append('line')
-                .attr('class', `data data-bar ${output[0].class}`)
-                .attr('x1', xScaleConfig(i) + xScaleConfig.bandwidth() / 2)
-                .attr('y1', yScaleConfig(output[0].value))
-                .attr('x2', xScaleConfig(i) + xScaleConfig.bandwidth() / 2)
-                .attr('y2', subHeight)
-                .attr('stroke', colors[output[0].class])
-                .attr('stroke-width', xScaleConfig.bandwidth())
-        }
-
-        // X Axis line
-        g.append('line')
-            .attr('x1', 0)         // Starting point x coordinate
-            .attr('y1', subHeight)         // Starting point y coordinate
-            .attr('x2', subWidth)       // Ending point x coordinate
-            .attr('y2', subHeight)       // Ending point y coordinate
-            .attr('stroke', '#C1C1C1')   // Line color
-            .attr('stroke-width', 1); // Line width
-
-        g.append('line')
-            .attr('x1', 0)         // Starting point x coordinate
-            .attr('y1', 0)         // Starting point y coordinate
-            .attr('x2', subWidth)       // Ending point x coordinate
-            .attr('y2', 0)       // Ending point y coordinate
-            .attr('stroke', '#C1C1C1')   // Line color
-            .attr('stroke-width', 1); // Line width
-
-        // Y Axis line
-        g.append('line')
-            .attr('x1', 0)         // Starting point x coordinate
-            .attr('y1', 0)         // Starting point y coordinate
-            .attr('x2', 0)       // Ending point x coordinate
-            .attr('y2', subHeight)       // Ending point y coordinate
-            .attr('stroke', '#C1C1C1')   // Line color
-            .attr('stroke-width', 1); // Line width
-
-        g.append('line')
-            .attr('x1', subWidth)         // Starting point x coordinate
-            .attr('y1', 0)         // Starting point y coordinate
-            .attr('x2', subWidth)       // Ending point x coordinate
-            .attr('y2', subHeight)       // Ending point y coordinate
-            .attr('stroke', '#C1C1C1')   // Line color
-            .attr('stroke-width', 1); // Line width
     }
+}
+
+const createHistogram = (data, key, subWidth, subHeight) => {
+    const g = mainGroup.append('g')
+    const setosa = IRIS_DATA["Iris-setosa"]
+    const virginica = IRIS_DATA["Iris-virginica"]
+    const versicolor = IRIS_DATA["Iris-versicolor"]
+    const maxNums = findMax(data.map(d => d[key]))
+    const minNums = findMin(data.map(d => d[key]))
+
+    // Create the x-scale
+    const xScale = scaleLinear()
+        .domain([minNums, maxNums])
+        .range([0, subWidth])
+        .nice()
+
+    // Modify domain
+    const numberOfTicks = 16
+    const histogramGenerator = histogram()
+        .value(function (d) {
+            return d[key]
+        })
+        .domain(xScale.domain())
+        .thresholds(xScale.ticks(numberOfTicks))
+
+    // Fill line on chart
+    const bins1 = histogramGenerator(setosa)
+    const bins2 = histogramGenerator(virginica)
+    const bins3 = histogramGenerator(versicolor)
+
+    // Find bins max
+    const maxOfBins = findMax([
+        ...bins1.map(d => d.length),
+        ...bins2.map(d => d.length),
+        ...bins3.map(d => d.length)
+    ])
+
+    // Create the y-scale
+    const yScale = scaleLinear()
+        .domain([0, maxOfBins])
+        .range([subHeight, 0])
+        .nice()
+
+    // Create axises
+    g.append('g')
+        .call(axisLeft(yScale).ticks(5))
+        .attr('transform', `translate(0, 0)`)
+    g.append('g')
+        .call(axisBottom(xScale).ticks(5))
+        .attr('transform', `translate(0, ${subHeight})`)
+
+    const rects1 = g.selectAll('.rect-setsosa')
+        .data(bins1)
+        .enter()
+        .append('rect')
+        .attr("x", d => xScale(d.x0))
+        .attr("transform", function (d) { return "translate(0," + yScale(d.length) + ")"; })
+        .attr("width", d => xScale(d.x1) - xScale(d.x0))
+        .attr("height", function (d) { return subHeight - yScale(d.length); })
+        .style("fill", colors["Iris-setosa"])
+        .style("opacity", 0.8)
+
+    const rects2 = g.selectAll('rect-virginica')
+        .data(bins2)
+        .enter()
+        .append('rect')
+        .attr("x", 0)
+        .attr("transform", function (d) { return "translate(" + xScale(d.x0) + "," + yScale(d.length) + ")"; })
+        .attr("width", d => xScale(d.x1) - xScale(d.x0))
+        .attr("height", function (d) { return subHeight - yScale(d.length); })
+        .style("fill", colors["Iris-virginica"])
+        .style("opacity", 0.8)
+
+    const rects3 = g.selectAll('rect-versicolor')
+        .data(bins3)
+        .enter()
+        .append('rect')
+        .attr("x", 0)
+        .attr("transform", function (d) { return "translate(" + xScale(d.x0) + "," + yScale(d.length) + ")"; })
+        .attr("width", d => xScale(d.x1) - xScale(d.x0))
+        .attr("height", function (d) { return subHeight - yScale(d.length); })
+        .style("fill", colors["Iris-versicolor"])
+        .style("opacity", 0.8)
     return g
 }
 
 
-
 // Core function to render the entire project
 const render = (data) => {
-    // Get histogram results
-    results = createLogValueRange(data)
-    // Draw two significant axis(s)
+    // Extract data 
     const keys = Object.keys(data[0])
     const attributes = keys.filter(k => k !== 'Class')
+
+    // Draw two significant axis(s)
     const xSAxisConfig = createSignificantAxisScaleConfig(attributes, [0, innerWidth])
     const xSAxis = axisBottom(xSAxisConfig)
     const xSAxisG = mainGroup.append('g')
         .attr('class', 's-axis-bottom')
         .attr('transform', `translate(${0}, ${innerHeight})`)
         .call(xSAxis)
+
     const ySAxisConfig = createSignificantAxisScaleConfig(attributes, [0, innerHeight])
     const ySAxis = axisLeft(ySAxisConfig)
     const ySAxisG = mainGroup.append('g')
         .attr('class', 's-axis-left')
         .attr('transform', `translate(${0}, ${0})`)
         .call(ySAxis)
+
+    // Extract data from big scales
+    const subWidth = xSAxisConfig.bandwidth()
+    const subHeight = ySAxisConfig.bandwidth()
+
     // Remove domains and ticks
     xSAxisG.selectAll('.domain').remove()
     xSAxisG.selectAll('.tick line').remove()
     ySAxisG.selectAll('.domain').remove()
     ySAxisG.selectAll('.tick line').remove()
+
     // Check values ranges
-    createLogValueRange(data, keys)
-    // Draw all charts
-    for (let i = 0; i < attributes.length; i++) {
-        for (let j = 0; j < attributes.length; j++) {
-            const chartG = createScatterPlotOrHistogram(
-                data,
-                attributes[i],
-                attributes[j],
-                xSAxisConfig.bandwidth(),
-                ySAxisConfig.bandwidth(),
-                radius = 3
+    // Draw all scatterplots
+
+    const uniquePairs = [
+        ["Sepal Length", "Sepal Width"],
+        ["Sepal Length", "Petal Length"],
+        ["Sepal Length", "Petal Width"],
+        ["Sepal Width", "Petal Length"],
+        ["Sepal Width", "Petal Width"],
+        ["Petal Length", "Petal Width"],
+        ["Petal Length", "Sepal Length"], // Reverse pair for added variation
+        ["Petal Width", "Sepal Length"], // Reverse pair for added variation
+        ["Sepal Width", "Sepal Length"], // Reverse pair for added variation
+        ["Petal Width", "Sepal Width"], // Reverse pair for added variation
+        ["Petal Length", "Sepal Width"], // Reverse pair for added variation
+        ["Petal Width", "Petal Length"]  // Original pair for added variation
+    ];
+
+    uniquePairs.forEach(pair => {
+        createScatterPlotOrHistogram(
+            data,
+            pair[0],
+            pair[1],
+            xSAxisConfig.bandwidth(),
+            ySAxisConfig.bandwidth(),
+            3,
+            {
+                x0: xSAxisConfig(pair[0]),
+                y0: ySAxisConfig(pair[1])
+            })
+    });
+
+    // Create cells
+    const cells = mainGroup.append('g')
+        .selectAll('g')
+        .data(
+            cross(
+                range(attributes.length),
+                range(attributes.length)
             )
-            chartG.attr('transform', `translate(${xSAxisConfig(attributes[i])}, ${ySAxisConfig(attributes[j])})`)
-        }
-    }
+        )
+        .join('g')
+        .attr(
+            'transform',
+            ([i, j]) =>
+                `translate(${xSAxisConfig(attributes[i])},${ySAxisConfig(attributes[j])})`
+        );
+
+
+    // Draw all histograms
+    const hist1 = createHistogram(data, "Sepal Length", subWidth, subHeight)
+    const hist2 = createHistogram(data, "Sepal Width", subWidth, subHeight)
+    const hist3 = createHistogram(data, "Petal Length", subWidth, subHeight)
+    const hist4 = createHistogram(data, "Petal Width", subWidth, subHeight)
+
+    hist1.attr("transform", `translate(${xSAxisConfig("Sepal Length")}, ${ySAxisConfig("Sepal Length")})`)
+    hist2.attr("transform", `translate(${xSAxisConfig("Sepal Width")}, ${ySAxisConfig("Sepal Width")})`)
+    hist3.attr("transform", `translate(${xSAxisConfig("Petal Length")}, ${ySAxisConfig("Petal Length")})`)
+    hist4.attr("transform", `translate(${xSAxisConfig("Petal Width")}, ${ySAxisConfig("Petal Width")})`)
+
+
+
     // Add legend
-    const legendG = createLegend()
-    legendG.attr('transform', `translate(${innerWidth}, ${margin.right})`)
+    // const legendG = createLegend()
+    // legendG.attr('transform', `translate(${innerWidth}, ${margin.right})`)
 }
 
 // Load data from dataset
@@ -529,5 +535,9 @@ csv('data.csv').then((data) => {
         !isNaN(d["Petal Length"]) &&
         !isNaN(d["Petal Width"])
     );
+    // Extract species
+    IRIS_DATA["Iris-setosa"] = validData.filter(d => d["Class"] === "Iris-setosa")
+    IRIS_DATA["Iris-virginica"] = validData.filter(d => d["Class"] === "Iris-virginica")
+    IRIS_DATA["Iris-versicolor"] = validData.filter(d => d["Class"] === "Iris-versicolor")
     render(validData)
 })

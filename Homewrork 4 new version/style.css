@@ -1,11 +1,10 @@
-/* Overral style */
 * {
     margin: 0;
     padding: 0;
 }
 
 html, body {
-    font-family: 'Arial', sans-serif; /* Use a clean, readable font */
+    font-family: 'Georgia', serif; /* Elegant font for the title */
     background-color: #f8f9fa; /* Light background for the container */
     overflow: hidden;
 }
@@ -22,16 +21,6 @@ html, body {
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add subtle shadow to the chart */
 }
 
-/* Axis */
-.s-axis-left text{
-    transform: rotate(-90deg);
-    text-anchor: middle;
-}
-
-.s-axis-bottom text {
-    text-anchor: middle;
-}
-
 /* Legend */
 .legend-title {
     font-weight: bold;
@@ -44,29 +33,31 @@ html, body {
 }
 
 .legend-group-active{
-    opacity: 0.5;
-    font-size: 14px;
+    opacity: 0.9;
+    font-size: 15px;
 }
 
 /* Data */
-
-.data {
-    transition: 0.3s all ease-in-out;
-    opacity: 1;
-}
-
 .Iris-virginica-active {
     opacity: 1;
-    /* fill: #C24D51; */
-    /* stroke: #C24D51; */
 }
 .Iris-setosa-active {
     opacity: 1;
-    /* fill: #4C72B0; */
-    /* stroke: #4C72B0; */
 }
 .Iris-versicolor-active {
     opacity: 1;
-    /* fill: #4F9C61; */
-    /* stroke: #4F9C61; */
+}
+.disable {
+    opacity: 0.2;
+}
+
+/* Label */
+
+.axis-label {
+    fill: #808080;
+}
+
+.axis-label-y {
+    transform: rotate(-90deg);
+    transition: 0.5s transform linear;
 }
