@@ -61,3 +61,16 @@ html, body {
     transform: rotate(-90deg);
     transition: 0.5s transform linear;
 }
+
+/* Brush */
+
+.circle-selected {
+    stroke: black;    
+    stroke-width: 1;
+    opacity: 1;
+}
+
+
+.circle-non-selected {
+    opacity: 0.2;
+}

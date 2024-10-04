@@ -34,6 +34,8 @@ const {
     axisBottom,
     cross,
     range,
+    brush,
+    zoom
 } = d3;
 
 // Constraints
@@ -144,7 +146,7 @@ const render = (data) => {
 
     // Plot data
     const startOpacity = 0
-    const opacity = 0.8
+    const opacity = 0.7
     const radius = 3
     cells.each(function ([i, j]) {
         if (i !== j) {
@@ -165,6 +167,49 @@ const render = (data) => {
                 .attr('opacity', opacity)
         }
     })
+
+    // Old way to apply brush
+    cells.each(function ([i, j]) {
+        if (i !== j) {
+            select(this)
+                .call(
+                    brush() // Add the brush feature using the d3.brush function
+                        .extent([[0, 0], [plotSize, plotSize]]) // Initialize the brush area
+                        .on("start", startBrush)
+                        .on("brush end", function () { updateChart(i, j)(this) }) // Pass function reference
+                    );
+        }
+    });
+
+    const myCircle = cells.selectAll('circle');
+    
+    // Start brushing
+    function startBrush() {
+        myCircle.classed('circle-selected', false)
+        myCircle.classed('circle-non-selected', false)
+    }
+
+    // Function that is triggered when brushing is performed
+    const updateChart = (i, j) => function (g) {
+        let extent = d3.event.selection;
+        if (extent) {
+            myCircle.classed("circle-selected", function (d) {
+                return isBrushed(extent, xScales[i](d[dimensions[i]]), yScales[j](d[dimensions[j]]));
+            })
+            myCircle.classed("circle-non-selected", function (d) {
+                return !isBrushed(extent, xScales[i](d[dimensions[i]]), yScales[j](d[dimensions[j]]));
+            })
+        } 
+    };
+
+    // A function that return TRUE or FALSE according if a dot is in the selection or not
+    function isBrushed(brush_coords, cx, cy) {
+        var x0 = brush_coords[0][0],
+            x1 = brush_coords[1][0],
+            y0 = brush_coords[0][1],
+            y1 = brush_coords[1][1];
+        return x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;    // This return TRUE or FALSE depending on if the points is in the selected area
+    }
 
     // Histogram
     const createHistogram = (data, key, subHeight, xScale) => (g) => {
@@ -208,7 +253,7 @@ const render = (data) => {
             .attr('stroke', '#D3D3D3')
             .attr('x2', plotSize)
 
-        const rectOpacity = 0.8
+        const rectOpacity = opacity
         const rectOpacityEx = 0
         const rects1 = g.selectAll('.rect-setsosa')
             .data(bins1)
@@ -329,7 +374,7 @@ const render = (data) => {
         // Return the corresponding label or the original class name if not found
         return labels[className] || className;
     }
-    
+
     // Add the dimensions for x and y
     const yAxisG = main.append('g')
         .attr('transform', `translate(${-padding}, ${(plotSize + padding) * 4 - 35})`)
@@ -362,4 +407,7 @@ const render = (data) => {
         .attr('x', -padding - 10)
         .attr('y', -padding)
 
+    // De-emphazise
+    // Tooltip for each point
+    // Legend to show a count of data points for each species
 }
