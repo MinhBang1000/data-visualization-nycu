@@ -73,4 +73,5 @@ html, body {
 
 .circle-non-selected {
     opacity: 0.2;
+    r: 2;
 }

@@ -160,7 +160,18 @@ const render = (data) => {
                 .attr('r', radius)
                 .attr('cx', d => xScales[i](d[dimensions[i]]))
                 .attr('cy', d => yScales[j](d[dimensions[j]]))
-
+                // Add mouseover, mousemove, and mouseleave events for tooltip
+                .on('mouseenter', function (event, d) {
+                    console.log("Hi");
+                    console.log(d); // Logs the data point when hovered
+                    select(this)  // 'this' refers to the circle element
+                        .attr('stroke', 'black')
+                        .attr('stroke-width', 2); // Optional highlight
+                })
+                .on('mouseleave', function (event, d) {
+                    select(this)
+                        .attr('stroke', 'none');  // Remove highlight
+                });
             // Add effect
             circles.transition()
                 .duration(1500)
@@ -176,13 +187,14 @@ const render = (data) => {
                     brush() // Add the brush feature using the d3.brush function
                         .extent([[0, 0], [plotSize, plotSize]]) // Initialize the brush area
                         .on("start", startBrush)
-                        .on("brush end", function () { updateChart(i, j)(this) }) // Pass function reference
-                    );
+                        .on("brush", function () { updateChart(i, j)(this) }) // Pass function reference
+                        .on("end", countSelectedCircle) // Pass function reference
+                );
         }
     });
 
     const myCircle = cells.selectAll('circle');
-    
+
     // Start brushing
     function startBrush() {
         myCircle.classed('circle-selected', false)
@@ -196,11 +208,26 @@ const render = (data) => {
             myCircle.classed("circle-selected", function (d) {
                 return isBrushed(extent, xScales[i](d[dimensions[i]]), yScales[j](d[dimensions[j]]));
             })
+
             myCircle.classed("circle-non-selected", function (d) {
                 return !isBrushed(extent, xScales[i](d[dimensions[i]]), yScales[j](d[dimensions[j]]));
             })
-        } 
+        }
     };
+
+    function countSelectedCircle() {
+        const counted = {
+            total: myCircle.size(),  // Total number of circles
+            selected: myCircle.filter('.circle-selected').size(),  // Number of selected circles
+            setosa_selected: myCircle.filter('.circle-selected.Iris-setosa').size(),  // Number of selected circles in the 'Iris-setosa' class
+            virginica_selected: myCircle.filter('.circle-selected.Iris-virginica').size(),  // Number of selected circles in the 'Iris-virginica' class
+            versicolor_selected: myCircle.filter('.circle-selected.Iris-versicolor').size()  // Number of selected circles in the 'Iris-versicolor' class
+        }
+        main.select('.legend-text-Iris-setosa').text(counted.setosa_selected)
+        main.select('.legend-text-Iris-virginica').text(counted.virginica_selected)
+        main.select('.legend-text-Iris-versicolor').text(counted.versicolor_selected)
+        main.select('.legend-text-total').text(counted.selected)
+    }
 
     // A function that return TRUE or FALSE according if a dot is in the selection or not
     function isBrushed(brush_coords, cx, cy) {
@@ -313,47 +340,104 @@ const render = (data) => {
     })
 
     // Add the legend
-    const createLegend = (keys, edge, gap) => (g) => {
+    const createLegend = (keys, edge, gap, type = 1) => (g) => {
         const mainGroup = main
-        g.append('text')
-            .attr('class', 'legend-title')
-            .text('Species')
-            .attr('x', 0)
-            .attr('y', 0)
-        keys.forEach((c, i) => {
+        if (type === 1) {
+            g.append('text')
+                .attr('class', 'legend-title')
+                .text('Species')
+                .attr('x', 0)
+                .attr('y', 0)
+            keys.forEach((c, i) => {
+                const legendRowG = g.append('g')
+                    .attr('class', 'legend-group')
+                    .attr('transform', `translate(${edge}, ${gap * (i + 1)})`)
+                legendRowG.on('mouseenter', function (e) {
+                    select(this).classed('legend-group-active', true)
+                    mainGroup.selectAll(`.${c}`)
+                        .classed(`${c}-active`, true)
+                    keys.forEach((k) => {
+                        if (k !== c) {
+                            mainGroup.selectAll(`.${k}`)
+                                .classed(`disable`, true)
+                        }
+                    })
+                })
+                legendRowG.on('mouseleave', function (e) {
+                    select(this).classed('legend-group-active', false)
+                    mainGroup.selectAll(`.${c}`)
+                        .classed(`${c}-active`, false)
+                    keys.forEach((k) => {
+                        if (k !== c) {
+                            mainGroup.selectAll(`.${k}`)
+                                .classed(`disable`, false)
+                        }
+                    })
+                })
+                legendRowG.append('circle')
+                    .attr('r', edge)
+                    .attr('fill', colorScale(c))
+                legendRowG.append('text')
+                    .attr('x', 15)
+                    .attr('y', 5)
+                    .text(keys[i])
+            })
+        } else if (type === 2) {
+            g.append('text')
+                .attr('class', 'legend-title')
+                .text('Selected Points')
+                .attr('x', 0)
+                .attr('y', 0)
+            keys.forEach((c, i) => {
+                const legendRowG = g.append('g')
+                    .attr('class', 'legend-group-select')
+                    .attr('transform', `translate(${edge}, ${gap * (i + 1)})`)
+                const label = legendRowG.append('text')
+                    .attr('x', 0)
+                    .attr('y', 5)
+                    .text(c + ":")
+                legendRowG.append('text')
+                    .attr('x', 8 + label.node().getBBox().width)
+                    .attr('y', 5)
+                    .attr('class', `legend-text-${c}`)
+                    .attr('font-style', 'italic')
+                    .text("0")
+            })
             const legendRowG = g.append('g')
-                .attr('class', 'legend-group')
-                .attr('transform', `translate(${edge}, ${gap * (i + 1)})`)
-            legendRowG.on('mouseenter', function (e) {
-                select(this).classed('legend-group-active', true)
-                mainGroup.selectAll(`.${c}`)
-                    .classed(`${c}-active`, true)
-                keys.forEach((k) => {
-                    if (k !== c) {
-                        mainGroup.selectAll(`.${k}`)
-                            .classed(`disable`, true)
-                    }
-                })
-            })
-            legendRowG.on('mouseleave', function (e) {
-                select(this).classed('legend-group-active', false)
-                mainGroup.selectAll(`.${c}`)
-                    .classed(`${c}-active`, false)
-                keys.forEach((k) => {
-                    if (k !== c) {
-                        mainGroup.selectAll(`.${k}`)
-                            .classed(`disable`, false)
-                    }
-                })
-            })
-            legendRowG.append('circle')
-                .attr('r', edge)
-                .attr('fill', colorScale(c))
-            legendRowG.append('text')
-                .attr('x', 15)
+                .attr('class', 'legend-group-select')
+                .attr('transform', `translate(${edge}, ${gap * 4})`)
+            const label = legendRowG.append('text')
+                .attr('x', 0)
                 .attr('y', 5)
-                .text(keys[i])
-        })
+                .text("Total:")
+            legendRowG.append('text')
+                .attr('x', 8 + label.node().getBBox().width)
+                .attr('y', 5)
+                .attr('class', `legend-text-${"total"}`)
+                .attr('font-style', 'italic')
+                .text("0")
+        } else {
+            g.append('text')
+                .attr('class', 'legend-title')
+                .text('An exact value')
+                .attr('x', 0)
+                .attr('y', 0)
+            dimensions.forEach((c, i) => {
+                const legendRowG = g.append('g')
+                    .attr('class', 'legend-group-select')
+                    .attr('transform', `translate(${edge}, ${gap * (i + 1)})`)
+                const label = legendRowG.append('text')
+                    .attr('x', 0)
+                    .attr('y', 5)
+                    .text(c + ":")
+                legendRowG.append('text')
+                    .attr('x', 8 + label.node().getBBox().width)
+                    .attr('y', 5)
+                    .attr('class', `legend-text-${c}`)
+                    .attr('font-style', 'italic')
+                    .text("0")
+            })
+        }
     }
 
     const legend = main.append('g')
@@ -407,7 +491,9 @@ const render = (data) => {
         .attr('x', -padding - 10)
         .attr('y', -padding)
 
-    // De-emphazise
-    // Tooltip for each point
     // Legend to show a count of data points for each species
+    const legend1 = main.append('g')
+        .attr('class', 'legend')
+    legend1.call(createLegend(keys, 8, 25, 2))
+        .attr('transform', `translate(${(plotSize + padding) * 4}, ${2* padding + plotSize})`)
 }
