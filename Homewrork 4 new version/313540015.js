@@ -48,7 +48,7 @@ const margin = 50
 const padding = 35
 const gap = 10
 
-csv('data.csv').then(data => {
+csv('http://vis.lab.djosix.com:2024/data/iris.csv').then(data => {
     const processedData = data.map(d => {
         return {
             "Sepal Length": +d["sepal length"],
@@ -58,7 +58,6 @@ csv('data.csv').then(data => {
             "Class": d["class"]
         };
     });
-
     // Ensure the data is valid
     const validData = processedData.filter(d =>
         !isNaN(d["Sepal Length"]) &&
@@ -218,10 +217,10 @@ const render = (data) => {
     function countSelectedCircle() {
         const counted = {
             total: myCircle.size(),  // Total number of circles
-            selected: myCircle.filter('.circle-selected').size(),  // Number of selected circles
-            setosa_selected: myCircle.filter('.circle-selected.Iris-setosa').size(),  // Number of selected circles in the 'Iris-setosa' class
-            virginica_selected: myCircle.filter('.circle-selected.Iris-virginica').size(),  // Number of selected circles in the 'Iris-virginica' class
-            versicolor_selected: myCircle.filter('.circle-selected.Iris-versicolor').size()  // Number of selected circles in the 'Iris-versicolor' class
+            selected: myCircle.filter('.circle-selected').size() / 12,  // Number of selected circles
+            setosa_selected: myCircle.filter('.circle-selected.Iris-setosa').size() / 12,  // Number of selected circles in the 'Iris-setosa' class
+            virginica_selected: myCircle.filter('.circle-selected.Iris-virginica').size() / 12,  // Number of selected circles in the 'Iris-virginica' class
+            versicolor_selected: myCircle.filter('.circle-selected.Iris-versicolor').size() / 12 // Number of selected circles in the 'Iris-versicolor' class
         }
         main.select('.legend-text-Iris-setosa').text(counted.setosa_selected)
         main.select('.legend-text-Iris-virginica').text(counted.virginica_selected)
