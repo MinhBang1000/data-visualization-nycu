@@ -48,6 +48,9 @@ const margin = 50
 const padding = 35
 const gap = 10
 
+// Common values
+let numberOfBins = 20
+
 csv('http://vis.lab.djosix.com:2024/data/iris.csv').then(data => {
     const processedData = data.map(d => {
         return {
@@ -238,13 +241,12 @@ const render = (data) => {
     }
 
     // Histogram
-    const createHistogram = (data, key, subHeight, xScale) => (g) => {
+    const createHistogram = (data, key, subHeight, xScale, numberOfTicks = 20) => (g) => {
         const setosa = data.filter(d => d["Class"] === "Iris-setosa")
         const virginica = data.filter(d => d["Class"] === "Iris-virginica")
         const versicolor = data.filter(d => d["Class"] === "Iris-versicolor")
-
+    
         // Modify domain
-        const numberOfTicks = 16
         const histogramGenerator = histogram()
             .value(function (d) {
                 return d[key]
@@ -263,7 +265,7 @@ const render = (data) => {
             ...bins2.map(d => d.length),
             ...bins3.map(d => d.length)
         ])
-
+        
         // Create the y-scale
         const yScale = scaleLinear()
             .domain([0, maxOfBins])
@@ -274,6 +276,7 @@ const render = (data) => {
         const yAxis = g.append('g')
             .call(axisLeft(yScale).ticks(ticks).tickPadding(tickPadding))
             .attr('transform', `translate(0, -1)`)
+            .attr('class', 'histogram')
         yAxis.selectAll('.domain').remove()
         yAxis.selectAll('.tick line')
             .attr('stroke', '#D3D3D3')
@@ -285,9 +288,8 @@ const render = (data) => {
             .data(bins1)
             .enter()
             .append('rect')
-            .attr('class', "data Iris-setosa")
-            .attr("x", d => xScale(d.x0))
-            .attr("transform", function (d) { return "translate(0," + yScale(d.length) + ")"; })
+            .attr('class', "data Iris-setosa histogram")
+            .attr("transform", function (d) { return "translate("+ xScale(d.x0) + "," + yScale(d.length) + ")"; })
             .attr("width", d => xScale(d.x1) - xScale(d.x0))
             .attr("height", function (d) { return subHeight - yScale(d.length); })
             .style("fill", colorScale("Iris-setosa"))
@@ -297,8 +299,7 @@ const render = (data) => {
             .data(bins2)
             .enter()
             .append('rect')
-            .attr("x", 0)
-            .attr('class', "data Iris-virginica")
+            .attr('class', "data Iris-virginica histogram")
             .attr("transform", function (d) { return "translate(" + xScale(d.x0) + "," + yScale(d.length) + ")"; })
             .attr("width", d => xScale(d.x1) - xScale(d.x0))
             .attr("height", function (d) { return subHeight - yScale(d.length); })
@@ -309,8 +310,7 @@ const render = (data) => {
             .data(bins3)
             .enter()
             .append('rect')
-            .attr("x", 0)
-            .attr('class', "data Iris-versicolor")
+            .attr('class', "data Iris-versicolor histogram")
             .attr("transform", function (d) { return "translate(" + xScale(d.x0) + "," + yScale(d.length) + ")"; })
             .attr("width", d => xScale(d.x1) - xScale(d.x0))
             .attr("height", function (d) { return subHeight - yScale(d.length); })
@@ -415,7 +415,7 @@ const render = (data) => {
                 .attr('class', `legend-text-${"total"}`)
                 .attr('font-style', 'italic')
                 .text("0")
-        } else {
+        } else if (type === 3) {
             g.append('text')
                 .attr('class', 'legend-title')
                 .text('An exact value')
@@ -435,6 +435,35 @@ const render = (data) => {
                     .attr('class', `legend-text-${c}`)
                     .attr('font-style', 'italic')
                     .text("0")
+            })
+        } else {
+            g.append('text')
+                .attr('class', 'legend-title')
+                .text('Number of Bins:')
+                .attr('x', 0)
+                .attr('y', 0)
+
+            g.append('text')
+                .attr('class', 'legend-value')
+                .text(numberOfBins)
+                .attr('x', 145)
+                .attr('y', 0)
+
+            select("#binSlider input").on('input', function () {
+                const value = event.target.value
+                select('.legend-value')
+                    .text(value)
+
+                selectAll('.histogram')
+                    .remove()
+                
+                // Replace histograms
+                cells.each(function ([i, j]) {
+                    if (i == j) {
+                        select(this)
+                            .call(createHistogram(data, dimensions[i], plotSize, xScales[i], value))
+                    }
+                })
             })
         }
     }
@@ -494,5 +523,11 @@ const render = (data) => {
     const legend1 = main.append('g')
         .attr('class', 'legend')
     legend1.call(createLegend(keys, 8, 25, 2))
-        .attr('transform', `translate(${(plotSize + padding) * 4}, ${2* padding + plotSize})`)
+        .attr('transform', `translate(${(plotSize + padding) * 4}, ${2 * padding + plotSize})`)
+
+    // Create a modifying bar for bins changing size tool
+    const legend2 = main.append('g')
+        .attr('class', 'legend')
+    legend2.call(createLegend(keys, 8, 25, 4))
+        .attr('transform', `translate(${(plotSize + padding) * 4}, ${4 * padding + 2 * plotSize})`)
 }
