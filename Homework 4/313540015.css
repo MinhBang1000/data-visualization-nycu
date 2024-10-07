@@ -21,6 +21,8 @@ html, body {
 .canvas {
     background-color: white;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add subtle shadow to the chart */
+    border-radius: 10px; /* Apply rounded corners */
+    overflow: hidden; /* Ensure the SVG contents do not overflow the rounded corners */
 }
 
 /* Legend */
@@ -91,7 +93,7 @@ html, body {
     margin-bottom: 10px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add subtle shadow to the chart */
     padding: 20px;
-    border-radius: 50px;
+    border-radius: 10px;
 }
 
 #binSlider label {

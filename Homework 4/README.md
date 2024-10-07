@@ -17,6 +17,7 @@ To view the project result, follow these steps:
 
 ## Note
 - **VPN Requirement**: If you're accessing this project from outside NYCU (National Yang Ming Chiao Tung University), you'll need to connect to the NYCU VPN to load the `iris.csv` data. This dataset likely contains sensitive information or is restricted to NYCU's network.
+- **Number of bins**: The approximate number of bins is installed by d3 automatically. Please follow this address `https://stackoverflow.com/questions/43380637/javascript-d3-histogram-thresholds-producing-wrong-number-of-bins`.
 
 ## Features
 This project offers the following features:
