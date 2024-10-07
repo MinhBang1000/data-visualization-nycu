@@ -1,0 +1,132 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    font-family: 'Georgia', serif; /* Elegant font for the title */
+    background-color: #f8f9fa; /* Light background for the container */
+    overflow: hidden;
+}
+.container-fluid {
+    position: relative;
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+/* SVG canvas */
+.canvas {
+    background-color: white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add subtle shadow to the chart */
+    border-radius: 10px; /* Apply rounded corners */
+    overflow: hidden; /* Ensure the SVG contents do not overflow the rounded corners */
+}
+
+/* Legend */
+.legend-title {
+    font-weight: bold;
+}
+
+.legend-group {
+    cursor: pointer;
+    opacity: 1;
+    transition: 0.3s all linear;
+}
+
+.legend-group-active{
+    opacity: 0.9;
+    font-size: 15px;
+}
+
+/* Data */
+.Iris-virginica-active {
+    opacity: 1;
+}
+.Iris-setosa-active {
+    opacity: 1;
+}
+.Iris-versicolor-active {
+    opacity: 1;
+}
+.disable {
+    opacity: 0.2;
+}
+
+/* Label */
+
+.axis-label {
+    fill: #808080;
+}
+
+.axis-label-y {
+    transform: rotate(-90deg);
+    transition: 0.5s transform linear;
+}
+
+/* Brush */
+
+.circle-selected {
+    stroke: black;    
+    stroke-width: 1;
+    opacity: 1;
+}
+
+
+.circle-non-selected {
+    opacity: 0.2;
+    r: 2;
+}
+
+/* Slider */
+#binSlider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 300px; /* Change this to a suitable width */
+    padding: 10px;
+    z-index: 10; /* Make sure it appears above the SVG */
+    background-color: white;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Add subtle shadow to the chart */
+    padding: 20px;
+    border-radius: 10px;
+}
+
+#binSlider label {
+    font-size: 14px;
+    color: #333;
+    font-weight: bold;
+}
+
+#binSlider input[type="range"] {
+    width: calc(100% - 40px); /* Allow for margin space */
+    margin: 0 10px;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px; /* Slightly thicker track */
+    background: #e0e0e0; /* Light gray track */
+    cursor: pointer;
+    border-radius: 10px;
+    outline: none;
+    transition: all 0.3s linear;
+}
+
+.bin-label{
+    font-size: 14px;
+}
+
+.bin-slash {
+    background-color: #4e4e4e;
+    width: 2px;
+    height: 100%;
+    margin: 0 10px;
+}
+
+.bin-control {
+    display: flex;
+    align-items: center;
+}
