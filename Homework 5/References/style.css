@@ -1,0 +1,26 @@
+#title {
+    font-size: 2em;
+    text-align: center;
+  }
+  
+  #next-button,
+  #prev-button {
+    background-color: #FFB6C1; /* Change the background color */
+    color: #fff; /* Change the text color */
+    padding: 5px 20px; /* Adjust padding */
+    border: none; /* Remove the default button border */
+    border-radius: 5px; /* Add rounded corners */
+    cursor: pointer; /* Show a pointer cursor on hover */
+  }
+  
+  .tooltip {
+    position: absolute;
+    text-align: left;
+    padding: 8px;
+    font: 12px sans-serif;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    pointer-events: none;
+  }
+  

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>
+      Data Visualization Homework 5: Stacked Bar
+      Chart
+    </title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://unpkg.com/d3@5.9.2/dist/d3.min.js"></script>
+  </head>
+  <body>
+    <p id="title">
+      Stacked Bar Chart of University Rankings
+      2024
+    </p>
+    <div
+      id="container"
+      style="text-align: center; width: 100%"
+    >
+      <div
+        id="menus"
+        style="display: inline-block"
+      >
+        <span id="sortBy"></span>
+        <span id="order"></span>
+      </div>
+      <div
+        id="buttons"
+        style="display: inline-block"
+      >
+        <button id="prev-button">Prev</button>
+        <button id="next-button">Next</button>
+      </div>
+    </div>
+    <svg width="960" height="500"></svg>
+    <script type="module" src="index.js"></script>
+  </body>
+</html>
