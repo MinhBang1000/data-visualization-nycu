@@ -1,13 +1,27 @@
+function capitalizeFirstLetters(inputString) {
+  // Split the string into words, capitalize the first letter of each word, and join them back together
+  return inputString
+    .split(' ') // Split the string into an array of words
+    .map(word => {
+      // Capitalize the first letter of each word and combine it with the rest of the word
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(' '); // Join the array back into a string
+}
+
+
 export const colorLegend = (
     selection,
-    { colorScale, colorLegendLabel }
+    { colorScale, colorLegendLabel }, 
+    props
   ) => {
+    const {margin} = props
     const colorLegendG = selection
       .selectAll('g.color-legend')
       .data([null])
       .join('g')
       .attr('class', 'color-legend')
-      .attr('transform', `translate(810 50)`);
+      .attr('transform', `translate(${margin.left}, ${margin.top + 15})`);
   
     colorLegendG
       .selectAll('text.color-legend-label')
@@ -33,7 +47,7 @@ export const colorLegend = (
       )
       .attr(
         'transform',
-        (d, i) => `translate(0, ${i * 30})`
+        (d, i) => `translate(${i * 200}, 0)`
       )
       .attr('font-size', 10)
       .attr('font-family', 'sans-serif')
@@ -46,7 +60,7 @@ export const colorLegend = (
           .select('text')
           .attr('dy', '0.32em')
           .attr('x', 15)
-          .text((d) => d);
+          .text((d) => capitalizeFirstLetters(d));
       });
   };
   

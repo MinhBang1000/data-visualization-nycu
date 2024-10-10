@@ -12,10 +12,7 @@ const {
   } = d3;
 import {colorLegend} from "./colorLegend.js"
   
-  export const stackedBarChart = (
-    selection,
-    props
-  ) => {
+  export const stackedBarChart = (selection,props) => {
     const {
       margin,
       width,
@@ -28,7 +25,7 @@ import {colorLegend} from "./colorLegend.js"
     const innerWidth =
       width - margin.right - margin.left - 50;
     const innerHeight =
-      height - margin.top - margin.bottom;
+      height - margin.top - margin.bottom - 200;
   
     const g = selection
       .selectAll('.container')
@@ -44,11 +41,10 @@ import {colorLegend} from "./colorLegend.js"
         `translate(${margin.left},${margin.top})`
       );
   
-    let groups = map(data, function (d) {
+    let groups = map(data, function (d) { // Name of university
         return d.name;
       })
       .keys();
-    console.log(groups)
   
     const xScale = scaleBand()
       .domain(groups)
@@ -60,9 +56,15 @@ import {colorLegend} from "./colorLegend.js"
       .range([innerHeight, 0]);
   
     const colorScale = scaleOrdinal()
-      .domain(subgroups)
+      .domain([
+        'teaching',
+        'research',
+        'citations',
+        'industry income',
+        'international outlook'
+      ])
       .range(schemeCategory10);
-  
+
     const xAxisG = g.select('.x-axis');
     const xAxisGEnter = gEnter
       .append('g')
@@ -81,6 +83,9 @@ import {colorLegend} from "./colorLegend.js"
       .selectAll('text')
       .style('text-anchor', 'start')
       .attr('transform', 'rotate(45)');
+
+    xAxisG.merge(xAxisGEnter).selectAll('.tick text')
+      .style('font-size', '14px')
   
     const yAxisG = g.select('.y-axis');
     const yAxisGEnter = gEnter
@@ -89,23 +94,12 @@ import {colorLegend} from "./colorLegend.js"
     yAxisG
       .merge(yAxisGEnter)
       .call(axisLeft(yScale).tickPadding(10));
-  
-    //show color legend
-    selection.call(colorLegend, {
-      colorScale,
-      colorLegendLabel,
-    });
-  
-    const filteredData = data.map((d) => {
-      const filteredEntry = {};
-      subgroups.forEach((col) => {
-        filteredEntry[col] = d[col];
-      });
-      return filteredEntry;
-    });
     
-    console.log(subgroups)
-    console.log(data)
+    yAxisG.merge(yAxisGEnter).style('font-size', '14px')
+
+    
+    // console.log(subgroups)
+    // console.log(data)
   
     let stackedData = stack().keys(subgroups)(
       data
@@ -130,6 +124,7 @@ import {colorLegend} from "./colorLegend.js"
       .data((d) => d)
       .enter()
       .append('rect')
+      .attr('class', d => d)
       .attr('x', function (d) {
         return xScale(d.data.name);
       })
@@ -149,22 +144,23 @@ import {colorLegend} from "./colorLegend.js"
   
         // Define the content of the tooltip
         tooltip.html(
-          `<strong>Name:</strong> ${d.data.name}<br>` +
-            `<strong>Total Score:</strong> ${d.data['scores_overall']}<br>` +
-            `<br>` +
-            `<strong>Teaching:</strong> ${d.data['scores_teaching']}<br>` +
-            `<strong>Research:</strong> ${d.data['scores_research']}<br>` +
-            `<strong>Citations:</strong> ${d.data['scores_citations']}<br>` +
-            `<strong>Industry Income:</strong> ${d.data['scores_industry_income']}<br>` +
-            `<strong>International Outlook:</strong> ${d.data['scores_international_outlook']}`
+          `<div><strong>Name:</strong> ${d.data.name}</div>` +
+            `<div><strong>Overall:</strong> ${d.data['scores_overall']}</div>` +
+            `<div><strong>Teaching:</strong> ${d.data['scores_teaching']}</div>` +
+            `<div><strong>Research:</strong> ${d.data['scores_research']}</div>` +
+            `<div><strong>Citations:</strong> ${d.data['scores_citations']}</div>` +
+            `<div><strong>Industry Income:</strong> ${d.data['scores_industry_income']}</div>` +
+            `<div><strong>International Outlook:</strong> ${d.data['scores_international_outlook']}</div>`
         );
       })
       .on('mousemove', function (d) {
+        select(this).classed('hovered', true)
         tooltip
           .style('left', d3.event.pageX + 10 + 'px')
           .style('top', d3.event.pageY - 30 + 'px');
       })
       .on('mouseout', function () {
+        select(this).classed('hovered', false)
         // Hide the tooltip
         tooltip
           .transition()
