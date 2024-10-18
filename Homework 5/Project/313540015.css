@@ -1,0 +1,149 @@
+/* Common styles */
+body {
+  font-family: 'Georgia', serif; /* Elegant font for the title */
+}
+
+#container {
+  text-align: center; /* Center-align contents */
+  width: 100%; /* Full width */
+  margin: 0 auto; /* Center the container */
+  margin-bottom: 20px;
+}
+
+/* Control */
+#menus {
+  display: inline-block; /* Align menus next to each other */
+  margin-right: 20px; /* Space between menus and buttons */
+}
+
+#menu>span {
+  margin-bottom: 10px;
+}
+
+#buttons {
+  display: inline-block; /* Align buttons next to each other */
+}
+button {
+  background-color: #007bff; /* Primary button color */
+  color: white; /* Button text color */
+  border: none; /* Remove border */
+  border-radius: 4px; /* Rounded corners */
+  padding: 10px 15px; /* Padding inside buttons */
+  font-size: 16px; /* Font size for buttons */
+  cursor: pointer; /* Change cursor to pointer on hover */
+  transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+button:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+}
+
+/* Select */
+select {
+  padding: 10px 15px; /* Padding inside buttons */
+  font-size: 16px; /* Font size for select options */
+  border: 1px solid #007bff; /* Border color matching buttons */
+  border-radius: 4px; /* Rounded corners */
+  background-color: white; /* Background color for select */
+  appearance: none; /* Remove default arrow */
+  cursor: pointer; /* Pointer cursor for better UX */
+  transition: border-color 0.3s; /* Smooth border color transition */
+}
+select option {
+  padding: 10px; /* Padding inside options */
+  background-color: white; /* Background color for options */
+  color: black; /* Text color for options */
+}
+
+/* Change the background color of options on hover */
+select option:hover {
+  background-color: #007bff; /* Highlight color on hover */
+  color: white; /* Change text color on hover */
+}
+
+#title {
+  font-size: 2em;
+  text-align: center;
+  font-weight: bold;
+}
+/* Tooltip */
+.tooltip, .tooltipGuide {
+  position: absolute;
+  text-align: left;
+  padding: 10px;
+  padding-bottom: 8px;
+  background: #fff;
+  border: 1px solid black;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.tooltip>div {
+  margin-bottom: 2px;
+}
+
+/* Guide */
+#guides {
+  margin-left: 10px;
+  padding: 12px 16px;
+  background-color: #007bff;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s all linear;
+}
+
+#guides:hover {
+  opacity: 0.5;
+}
+
+.svg-container {
+  display: flex;
+  justify-content: center;
+}
+
+/* legend */
+.color-legend .tick {
+  cursor: pointer;
+}
+
+.color-legend .tick text {
+  font-size: 14px;
+}
+
+.legend-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.legend-container>div {
+  margin: 0 15px;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: 0.2s all linear;
+  transform: scale(1);
+  display: flex;
+  align-items: center;
+}
+
+.legend-container>div>span {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+  border-radius: 50px;
+  padding: 0;
+}
+
+.legend-container>div:hover {
+  transform: scale(1.08);
+}
+
+.legend-item p {
+  font-weight: bold;
+}
+
+.non-selected {
+  opacity: 0.5;
+}

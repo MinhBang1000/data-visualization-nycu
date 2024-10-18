@@ -1,0 +1,15 @@
+What should I do now ?
+
+1. Horizonal bar chart
+2. Search universtiy name
+3. Editing the number of bars
+4. Hover each categories
+5. Change the styles
+    - Title
+    - Select option
+    - Button
+    - Transition appearing effect
+6. Customize the order of categories
+
+
+

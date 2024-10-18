@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>
+    Visualizing World University Rankings 2024: A Stacked Bar Chart Approach
+  </title>
+  <link rel="stylesheet" href="313540015.css" />
+  <script src="https://unpkg.com/d3@5.9.2/dist/d3.min.js"></script>
+</head>
+
+<body>
+  <p id="title">
+    Visualizing World University Rankings 2024: A Stacked Bar Chart Approach
+  </p>
+  <div id="container" style="text-align: center; width: 100%">
+    <div id="menus" style="display: inline-block">
+      <span id="sortBy"></span>
+      <span id="order"></span>
+    </div>
+    <div id="buttons" style="display: inline-block">
+      <button id="prev-button">Prev</button>
+      <button id="next-button">Next</button>
+    </div>
+    <div id="guides" style="display: inline-block;">
+      &#63
+    </div>
+  </div>
+  <div class="legend-container">
+    <div class="legend-item teaching"><span style="background-color: #1F77B4" ></span> <p>Teaching</p></div>
+    <div class="legend-item research"><span style="background-color: #FF7F0E" ></span> <p>Research</p></div>
+    <div class="legend-item citations"><span style="background-color: #2CA02C" ></span> <p>Citations</p></div>
+    <div class="legend-item industry income"><span style="background-color: #D62728" ></span> <p>Industry Income</p></div>
+    <div class="legend-item international outlook"><span style="background-color: #9467BD" ></span> <p>International Outlook</p></div>
+  </div>
+  <div class="svg-container">
+    <svg viewBox="0 0 1366 700" width="1366" height="700" class="canvas item" preserveAspectRatio="xMinYMin"></svg>
+  </div>
+  <script src="313540015.js"></script>
+</body>
+
+</html>
