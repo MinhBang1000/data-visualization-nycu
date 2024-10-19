@@ -1,0 +1,79 @@
+body {
+  font-family: 'Georgia', serif;
+}
+/* root */
+#root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+/* Control */
+.control {
+  display: flex;
+
+}
+
+/* Legend */
+.control-legend {
+  display: flex;
+  flex-direction: column;
+}
+
+.legend-title p{
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.control-legend-item {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.control-legend-item>div{
+  width: 25px;
+  height: 25px; 
+  border-radius: 50px;
+  margin-left: 10px;
+  margin-right: 5px;
+}
+
+/* Title Styling */
+#title {
+  font-size: 2.5em;  /* Increase font size for more impact */
+  text-align: center;
+  font-weight: bold;  /* Make the title bold */
+  color: #333;  /* Darker color for better readability */
+  margin-bottom: 20px;  /* Add some space below the title */
+}
+
+/* Tooltip Styling */
+.tooltip {
+  position: absolute;
+  text-align: left;
+  padding: 10px;  /* Add some padding for better spacing */
+  font: 13px 'Arial', sans-serif;  /* Use a consistent font */
+  background: rgba(255, 255, 255, 0.9);  /* Slightly transparent background */
+  border: 1px solid #ccc;
+  border-radius: 8px;  /* Softer rounded corners */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);  /* Add a subtle shadow */
+  pointer-events: none;
+  transition: opacity 0.3s ease-in-out;  /* Smooth transition for fade effect */
+}
+
+/* Tick Styling */
+.tick {
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;  /* Smooth transition for hover effects */
+}
+
+.tick text {
+  font-size: 14px;
+  fill: #333;  /* Darker color for better visibility */
+}
+
+/* Legend Styling */
+
