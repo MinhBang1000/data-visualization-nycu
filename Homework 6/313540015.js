@@ -70,12 +70,12 @@ const colorLegend = (
           selection.append('circle');
           selection.append('text');
           selection.append("foreignObject")
-          .attr("x", 80)  // Positioning the checkbox inside the group
-          .attr("y", -10)
-          .attr("width", 100)
-          .attr("height", 30)
-          .append('xhtml:div')  // XHTML to embed HTML elements inside SVG
-          .html(`<input type="checkbox" id="myCheckbox" class="${d}" />`);
+            .attr("x", 80)  // Positioning the checkbox inside the group
+            .attr("y", -10)
+            .attr("width", 100)
+            .attr("height", 30)
+            .append('xhtml:div')  // XHTML to embed HTML elements inside SVG
+            .html(`<input type="checkbox" id="myCheckbox" class="${d}" />`);
         })
     )
     .attr(
@@ -95,7 +95,7 @@ const colorLegend = (
         .attr('x', 15)
         .text((d) => d);
     })
-  
+
   function removeTick(str) {
     return str.split(' ')[0]; // Split by space and return the first part
   }
@@ -125,7 +125,7 @@ const colorLegend = (
   // })
 
   // Tick mouse event adding and deleting
-  ticks.selectAll('input').on('click', function() {
+  ticks.selectAll('input').on('click', function () {
     const thisTick = select(this)
     const type = thisTick.attr('class')
     console.log(type);
@@ -173,7 +173,7 @@ const themeRiver = (selection, props) => {
     .range([0, innerWidth]);
 
   console.log(types);
-  
+
 
   const stackedData = d3
     .stack()
@@ -294,6 +294,23 @@ const themeRiver = (selection, props) => {
     });
 };
 
+const renderColorLegend = () => {
+  const container = select(".legend-body")
+  let str = ""
+  savedTypes.forEach(type => {
+    container.append('foreignObject')
+    const item = `
+          <div class="control-legend-item ${type}-block">
+            <input type="checkbox"  class="${type}" />
+            <div class="color-circle" style="background-color: ${colors[type]};"></div>
+            <label>${type}</label>
+          </div>
+    `
+    str += item
+  })
+  container.html(str)
+}
+
 const render = () => {
   svg.call(themeRiver, {
     margin: {
@@ -308,22 +325,147 @@ const render = () => {
     colorLegendLabel: 'Type',
     types,
   });
+  renderColorLegend()
+  const inputPositions = {}
+  selectAll(".control-legend-item")
+    .each(function (d, i) {
+      const { x, y } = select(this).node().getBoundingClientRect()
+      const type = savedTypes[i]
+      inputPositions[type] = { x, y }
+    })
 
   const inputs = selectAll(".legend-body input")
-  inputs.each(function(d, i) {
+  inputs.each(function (d, i) {
     const input = select(this)
     const classname = input.attr('class')
     input.property("checked", statusTypes[classname])
   })
 
-  inputs.on('click', function() {
+  inputs.on('click', function () {
     const input = select(this)
     const classname = input.attr('class')
     statusTypes[classname] = !statusTypes[classname]
-    types = savedTypes.filter(type => statusTypes[type]) 
+    types = savedTypes.filter(type => statusTypes[type])
     clearChart()
-    render()
+    svg.call(themeRiver, {
+      margin: {
+        top: 30,
+        right: 20,
+        bottom: 70,
+        left: 20,
+      },
+      width,
+      height,
+      data,
+      colorLegendLabel: 'Type',
+      types,
+    });
   })
+
+  function whichPosition(currentKey, currentY, positions) {
+    for (let key in positions) {
+      if (key === currentKey) {
+        continue
+      }
+      let y = positions[key].y
+      let rangeY = y + 20
+      if (currentY < rangeY && currentY >= y) {
+        return key
+      }
+    }
+    return ''
+  }
+  function insertAfterValue(array, firstValue, secondValue) {
+    // Find the index of the firstValue
+    const index = array.indexOf(firstValue);
+
+    // If firstValue exists in the array
+    if (index !== -1) {
+      // Insert the secondValue at the found index
+      array = array.filter(a => a !== secondValue)
+      array.splice(index, 0, secondValue);
+    } else {
+      console.log(`${firstValue} not found in the array.`);
+    }
+
+    return array;
+  }
+
+
+  let isPlaced = ""
+  let lastPlaced = ""
+  // Define the drag behavior
+  const drag = () => {
+    function dragstarted(event, d) {
+      // When the drag starts, apply a border to the element being dragged
+      d3.select(this).select("label").style("font-weight", "bold")
+    }
+
+    function dragged(event, d) {
+      // Get the current transform or set a default translate(0, 0)
+      const selectedObj = d3.select(this)
+      const currentTransform = selectedObj.attr("data-transform") || "translate(0, 0)";
+      const match = currentTransform.match(/translate\(([-\d.]+),\s*([-\d.]+)\)/);
+      const initialX = match ? parseFloat(match[1]) : 0;
+      const initialY = match ? parseFloat(match[2]) : 0;
+
+      // Notify to users this attribute will be changed
+      if (lastPlaced !== "") {
+        d3.select(`.${lastPlaced}-block`)
+          .style('border', '3px solid black')
+        lastPlaced = ""  
+      }
+
+      const { x, y } = selectedObj.node().getBoundingClientRect()
+      isPlaced = whichPosition(savedTypes[d], y, inputPositions)
+      
+      // Notify to users this attribute will be changed
+      d3.select(`.${isPlaced}-block`)
+        .style('border', '3px solid black')
+      // Check this
+      lastPlaced = isPlaced
+      // Apply the new transform based on the current drag event
+      d3.select(this)
+        .attr("data-transform", `translate(${0}, ${initialY + d3.event.dy})`)
+        .style("transform", `translate(${0}px, ${initialY + d3.event.dy}px)`);
+    }
+
+    function dragended(event, d) {
+      // When drag ends, remove the border
+      const selectedObj = d3.select(this).select("label")
+      selectedObj.style("font-weight", "normal")
+      const type = savedTypes[d]
+      if (isPlaced === "") {
+        // Apply the new transform based on the current drag event
+        d3.select(this)
+          .attr("data-transform", `translate(${0}, ${0})`)
+          .style("transform", `translate(${0}px, ${0}px)`);
+      } else {
+        // Notify to users this attribute will be changed
+        d3.select(`.${isPlaced}-block`)
+          .style('border', '3px solid transparent')
+        // Move the value to other position
+        savedTypes = insertAfterValue(savedTypes, isPlaced, type)
+        types = savedTypes
+        types.forEach((type) => {
+          statusTypes[type] = true
+        })
+        clearChart()
+        render()
+      }
+    }
+
+    // Return the drag behavior
+    return d3.drag()
+      .on("start", dragstarted)
+      .on("drag", dragged)
+      .on("end", dragended);
+  };
+
+  // Apply the drag behavior to the .control-legend-item elements
+  const legendItems = d3.selectAll('.control-legend-item')
+    // .style('position', 'absolute')  // Ensure the elements can be moved
+    .call(drag());  // Apply the drag behavior
 };
 
 csv('ma_lga_12345.csv').then((loadedData) => {

@@ -28,9 +28,22 @@ body {
 }
 
 .control-legend-item {
-  margin-bottom: 12px;
+  position: relative;
   display: flex;
+  margin-bottom: 12px;
   align-items: center;
+  width: 150px;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: 0.1s transform linear;
+}
+
+.control-legend-item label {
+  cursor: pointer;
+}
+
+.control-legend-item:active, .control-legend-item label:active {
+  cursor: grabbing;
 }
 
 .control-legend-item>div{
