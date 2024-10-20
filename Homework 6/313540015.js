@@ -13,13 +13,17 @@ const {
   axisLeft,
   area,
   drag,
-  selectAll
+  selectAll,
+  pointer
 } = d3;
 
 const svg = select('svg');
 
 const width = +svg.attr('width');
 const height = +svg.attr('height');
+
+let offset = [d3.stackOffsetWiggle, d3.stackOffsetNone]
+let usingOffset = offset[0]
 
 let data;
 let types;
@@ -134,6 +138,8 @@ const colorLegend = (
 
 const clearChart = () => {
   svg.selectAll('.container').remove()
+  // remove clip
+  select("#clip").remove()
 }
 
 const themeRiver = (selection, props) => {
@@ -144,6 +150,7 @@ const themeRiver = (selection, props) => {
     data,
     colorLegendLabel,
     types,
+    offset
   } = props;
 
   const innerWidth =
@@ -172,13 +179,10 @@ const themeRiver = (selection, props) => {
     .domain(extent(data, (d) => d.saledate))
     .range([0, innerWidth]);
 
-  console.log(types);
-
-
   const stackedData = d3
     .stack()
     .order(d3.stackOrderNone)
-    .offset(d3.stackOffsetWiggle)
+    .offset(usingOffset)
     .keys(types.slice().reverse())(data);
 
   console.log(stackedData);
@@ -238,6 +242,16 @@ const themeRiver = (selection, props) => {
         .tickSizeOuter(0)
     );
 
+  // ADD THE Y-AXIS HERE
+  const yAxis = d3.axisLeft(yScale);  // Create the Y-axis using the Y scale
+
+  // Append the Y-axis to the chart
+  const yAxisG = gEnter.append('g')
+    .attr('class', 'y-axis')
+    .call(yAxis);  // Call the Y-axis function
+
+  yAxis.ticks(6);  // Set number of ticks to show on Y-axis
+
   const areaGenerator = area()
     .x((d) => xScale(d.data.saledate))
     .y0((d) => yScale(d[0]))
@@ -252,7 +266,15 @@ const themeRiver = (selection, props) => {
     .merge(gEnter)
     .selectAll('path')
     .data(stackedData);
-  gEnter
+
+  // Append the vertical line to the SVG (hidden by default)
+  const hoverLine = svg.append('line')
+  .attr('class', 'hover-line')
+  .attr('stroke', 'yellow')
+  .attr('stroke-width', 5)
+  .style('opacity', 0);  // Initially hide the line
+
+  const rivers = gEnter
     //.enter()
     .append('g')
     .selectAll('path')
@@ -262,35 +284,76 @@ const themeRiver = (selection, props) => {
     .attr('class', 'area')
     .attr('d', areaGenerator)
     .attr('fill', (d) => colors[d.key])
-    .on('mouseover', function (d) {
-      console.log(d.key);
-
-      // Show the tooltip
+    .on('mousemove', function (d) {
+      // Use d3.mouse for D3 v5 or earlier
+      const [mouseX, mouseY] = d3.mouse(this);  // Get mouse coordinates relative to the stream path
+  
+      const date = xScale.invert(mouseX);  // Convert X position to the corresponding date
+  
+      // Use a larger tolerance, about 100-110 days, which covers the quarterly gaps
+      const closestData = d.find(segment => {
+        return Math.abs(segment.data.saledate.getTime() - date.getTime()) < (1000 * 60 * 60 * 24 * 110); // Approx 110-day tolerance
+      });
+  
+      if (!closestData) {
+        tooltip.transition().duration(500).style('opacity', 0);
+        hoverLine.style('opacity', 0);  // Hide the line when no data is found
+        return;
+      }
+  
+      // Calculate the lower and upper bounds (y0 and y1) based on stack data
+      const y0 = yScale(closestData[0]);  // Lower bound of the stream (d[0])
+      const y1 = yScale(closestData[1]);  // Upper bound of the stream (d[1])
+  
+      // Show and move the hover line to the current X position, resize it between y0 and y1
+      hoverLine
+        .style('opacity', 1)
+        .attr('x1', mouseX + 72)
+        .attr('x2', mouseX + 72)
+        .attr('y1', y1 + 30)  // Start at the top of the stream
+        .attr('y2', y0 + 30); // End at the bottom of the stream
+  
+      // Calculate the price (difference between the upper and lower bounds of the stack)
+      const price = closestData ? (closestData[1] - closestData[0]) : null;
+  
+      // Update the tooltip
       tooltip
         .transition()
         .duration(200)
         .style('opacity', 0.9);
-
-      // Define the content of the tooltip
+  
       tooltip.html(
-        `<strong>Type:</strong> ${d.key}<br>` /*+
-          `<strong>Total Score:</strong>` +
-          d.data[d.key]
-          ? `${d.data[d.key]}<br>`
-          : `NaN<br>`*/
-      );
-    })
-    .on('mousemove', function (d) {
-      tooltip
-        .style('left', d3.event.pageX + 10 + 'px')
-        .style('top', d3.event.pageY - 30 + 'px');
+        `<strong>Type:</strong> ${d.key}<br>` +
+        `<strong>Date:</strong> ${d3.timeFormat('%b %d, %Y')(closestData.data.saledate)}<br>` +
+        `<strong>Median Price:</strong> ${price ? price.toFixed(2) : 'N/A'}`
+      )
+        .style('left', (d3.event.pageX + 10) + 'px')
+        .style('top', (d3.event.pageY - 28) + 'px');
     })
     .on('mouseout', function () {
-      // Hide the tooltip
-      tooltip
+      tooltip.transition().duration(500).style('opacity', 0);
+      hoverLine.style('opacity', 0);  // Hide the line when the mouse leaves
+    });
+
+
+  // Clip path
+  const clip = svg.append("clipPath")
+    .attr("id", "clip")
+    .append("rect")
+    .attr("width", 0) // Start with width 0 (completely hidden)
+    .attr("height", height); // Set the height to cover the entire area
+
+  rivers
+    .attr("clip-path", "url(#clip)")
+    .style('opacity', 0)
+    .transition()
+    .duration(800)
+    .style('opacity', 1)
+    .on("start", function () {
+      d3.select("#clip rect") // Animate the clip path to reveal the elements
         .transition()
-        .duration(500)
-        .style('opacity', 0);
+        .duration(800)
+        .attr("width", width); // Increase the width from 0 to the full width
     });
 };
 
@@ -312,18 +375,49 @@ const renderColorLegend = () => {
 }
 
 const render = () => {
+  // Select the toggle switch by its ID
+  select("#toggleStacking")
+    .on('change', function () {
+      // Check if the toggle is checked or not
+      const useWiggle = select(this).property('checked');
+
+      // Set the stacking offset based on the toggle state
+      usingOffset = useWiggle ? offset[1] : offset[0]
+
+      // Clear the current chart (you may already have a function like this)
+      clearChart();
+
+      // Re-render the chart with the selected stacking offset
+      svg.call(themeRiver, {
+        margin: {
+          top: 30,
+          right: 20,
+          bottom: 70,
+          left: 80,
+        },
+        width,
+        height,
+        data,
+        colorLegendLabel: 'Type',
+        types,
+        offset: usingOffset,  // Pass the offset (wiggle or baseline)
+      });
+    });
+
+
   svg.call(themeRiver, {
     margin: {
       top: 30,
       right: 20,
       bottom: 70,
-      left: 20,
+      left: 80,
     },
     width,
     height,
     data,
     colorLegendLabel: 'Type',
     types,
+    usingOffset
   });
   renderColorLegend()
   const inputPositions = {}
@@ -352,24 +446,25 @@ const render = () => {
         top: 30,
         right: 20,
         bottom: 70,
-        left: 20,
+        left: 80,
       },
       width,
       height,
       data,
       colorLegendLabel: 'Type',
       types,
+      usingOffset
     });
   })
 
+  // The key of legend we are staying
   function whichPosition(currentKey, currentY, positions) {
     for (let key in positions) {
       if (key === currentKey) {
         continue
       }
       let y = positions[key].y
-      let rangeY = y + 20
-      if (currentY < rangeY && currentY >= y) {
+      if (currentY < y + 20 && currentY >= y - 20) {
         return key
       }
     }
@@ -398,7 +493,6 @@ const render = () => {
   const drag = () => {
     function dragstarted(event, d) {
       // When the drag starts, apply a border to the element being dragged
-      d3.select(this).select("label").style("font-weight", "bold")
     }
 
     function dragged(event, d) {
@@ -406,24 +500,24 @@ const render = () => {
       const selectedObj = d3.select(this)
       const currentTransform = selectedObj.attr("data-transform") || "translate(0, 0)";
       const match = currentTransform.match(/translate\(([-\d.]+),\s*([-\d.]+)\)/);
-      const initialX = match ? parseFloat(match[1]) : 0;
       const initialY = match ? parseFloat(match[2]) : 0;
-
-      // Notify to users this attribute will be changed
-      if (lastPlaced !== "") {
-        d3.select(`.${lastPlaced}-block`)
-          .style('border', '3px solid black')
-        lastPlaced = ""  
-      }
 
       const { x, y } = selectedObj.node().getBoundingClientRect()
       isPlaced = whichPosition(savedTypes[d], y, inputPositions)
-      
+
+      if (isPlaced !== lastPlaced) {
+        d3.select(`.${lastPlaced}-block`)
+          .classed("activate", false)
+      }
+
       // Notify to users this attribute will be changed
       d3.select(`.${isPlaced}-block`)
-        .style('border', '3px solid black')
-      // Check this
+        .classed("activate", true)
+      //   .style('border', '3px solid black')
+
+      // Save the changed attribute
       lastPlaced = isPlaced
+
       // Apply the new transform based on the current drag event
       d3.select(this)
         .attr("data-transform", `translate(${0}, ${initialY + d3.event.dy})`)
@@ -433,7 +527,6 @@ const render = () => {
     function dragended(event, d) {
       // When drag ends, remove the border
       const selectedObj = d3.select(this).select("label")
-      selectedObj.style("font-weight", "normal")
       const type = savedTypes[d]
       if (isPlaced === "") {
         // Apply the new transform based on the current drag event
@@ -466,9 +559,15 @@ const render = () => {
   const legendItems = d3.selectAll('.control-legend-item')
     // .style('position', 'absolute')  // Ensure the elements can be moved
     .call(drag());  // Apply the drag behavior
+
+  // Apply the hover out for each div
+  legendItems.on('mouseout', function () {
+    select(this).classed("activate", false)
+  })
+
 };
 
-csv('ma_lga_12345.csv').then((loadedData) => {
+csv('http://vis.lab.djosix.com:2024/data/ma_lga_12345.csv').then((loadedData) => {
   // Get distinct combination values of each pair type and bedrooms
   types = loadedData
     .map(function (d) {
