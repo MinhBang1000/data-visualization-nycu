@@ -1,0 +1,259 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Georgia', serif;
+}
+/* root */
+#root {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#container {
+  width: 80%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-top: 100px;
+}
+
+/* Control */
+.control {
+  display: flex;
+
+}
+
+.control-chart {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.control-guide {
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin-top: 20px;
+  border-radius: 5px;
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+}
+
+.control-guide h3 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+  color: #333;
+  text-align: center;
+}
+
+.control-guide ul {
+  padding-left: 20px;
+}
+
+.control-guide li {
+  margin-bottom: 10px;
+  font-size: 1em;
+  line-height: 1.5;
+  color: #555;
+}
+
+.control-guide strong {
+  color: #333;
+  font-weight: bold;
+}
+
+.control-guide ul li::before {
+  content: "✔"; /* Adds a checkmark before each list item */
+  color: #5cb85c;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.control-guide li:last-child {
+  margin-bottom: 0;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.switch {
+  margin: 0 10px;
+}
+
+
+.control-chart>div {
+  width: fit-content;
+}
+
+/* Legend */
+.control-legend {
+  display: flex;
+  flex-direction: column;
+}
+
+.legend-footer {
+  display: flex;
+  flex-direction: column;
+}
+
+.activate  {
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.legend-title p{
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.control-legend-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 150px;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: 0.1s transform linear, 0.3s box-shadow ease-in-out;
+  padding: 6px 5px;
+}
+
+.control-legend-item label {
+  cursor: pointer;
+}
+
+.control-legend-item:active, .control-legend-item label:active {
+  cursor: grabbing;
+}
+
+.control-legend-item>div{
+  width: 25px;
+  height: 25px; 
+  border-radius: 50px;
+  margin-left: 10px;
+  margin-right: 5px;
+}
+
+/* Title Styling */
+#title {
+  font-size: 2.5em;  /* Increase font size for more impact */
+  text-align: center;
+  font-weight: bold;  /* Make the title bold */
+  color: #333;  /* Darker color for better readability */
+  padding-bottom: 50px;
+}
+
+/* Tooltip Styling */
+.tooltip {
+  position: absolute;
+  text-align: left;
+  padding: 10px;  /* Add some padding for better spacing */
+  font: 13px 'Arial', sans-serif;  /* Use a consistent font */
+  background: rgba(255, 255, 255, 0.9);  /* Slightly transparent background */
+  border: 1px solid #ccc;
+  border-radius: 8px;  /* Softer rounded corners */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);  /* Add a subtle shadow */
+  pointer-events: none;
+  transition: opacity 0.3s ease-in-out;  /* Smooth transition for fade effect */
+}
+
+/* Tick Styling */
+.tick {
+  opacity: 1;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;  /* Smooth transition for hover effects */
+}
+
+.tick text {
+  font-size: 14px;
+  fill: #333;  /* Darker color for better visibility */
+}
+
+/* Toggle */
+/* Container for the toggle switch */
+.toggle-container {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+}
+
+/* Label for the toggle */
+.toggle-label {
+  font-size: 1.2em;
+  margin-right: 10px;
+}
+
+/* The switch container */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+/* Hide the default checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider inside the switch */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+/* The round button inside the slider */
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+/* When checked, make the slider green */
+input:checked + .slider {
+  background-color: #4caf50;
+}
+
+/* Move the slider round button to the right when checked */
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+/* Rounded slider */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/* Additional text next to the switch */
+.toggle-text {
+  margin-left: 10px;
+  font-size: 1em;
+  font-weight: bold;
+}
+

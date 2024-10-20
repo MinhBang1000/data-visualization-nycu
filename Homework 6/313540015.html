@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>
+    Visualizing House Property Sales Over Time with a ThemeRiver Chart
+  </title>
+  <link rel="stylesheet" href="313540015.css" />
+  <script src="https://unpkg.com/d3@5.9.2/dist/d3.min.js"></script>
+</head>
+
+<body>
+  <div id="root">
+    <div id="container">
+      <p id="title">
+        Visualizing House Property Sales Over Time with a ThemeRiver Chart
+      </p>
+      <div class="control">
+        <div class="control-item control-chart">
+          <svg viewBox="0 0  800 500" width="800" height="500" preserveAspectRatio="xMinYMin"></svg>
+          <div>
+            <div class="toggle-container">
+              <label class="toggle-label" for="toggleStacking">Stream Layout</label>
+              <label class="switch">
+                <input type="checkbox" id="toggleStacking">
+                <span class="slider round"></span>
+              </label>
+              <span class="toggle-text">Wiggle / Baseline</span>
+            </div>
+          </div>
+          <div class="control-guide">
+            <h3>Feature Guide</h3>
+            <ul>
+              <li><strong>Hover Interaction:</strong> When you hover over a stream, the chart will display a tooltip
+                with information about the property type, the date, and the median price for that stream at that time.
+              </li>
+              <li><strong>Stream Reordering:</strong> You can drag and drop the property type legend items on the right
+                to reorder the streams. This allows you to prioritize certain property types and view them at the top of
+                the chart.</li>
+              <li><strong>Toggle Stream Layout:</strong> Use the toggle switch at the bottom of the chart to switch
+                between the 'Wiggle' and 'Baseline' stream layouts. The 'Wiggle' layout creates a flowing river-like
+                appearance, while 'Baseline' aligns the streams to a common base for better comparison.</li>
+              <li><strong>Stream Visibility:</strong> You can hide or show specific property types by checking or
+                unchecking the checkboxes in the legend. This helps you focus on specific streams without cluttering the
+                chart.</li>
+              <li><strong>Animated Transitions:</strong> Whenever you reorder the streams, toggle layouts, or change
+                visibility, the chart will animate these changes with smooth transitions for better clarity.</li>
+              <li><strong>Hover Line:</strong> A vertical guide line will appear at the mouse pointer to help you
+                precisely track the position across the streams.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="control-item control-legend">
+          <div class="legend-title">
+            <p>Types</p>
+          </div>
+          <div class="legend-body">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="313540015.js"></script>
+</body>
+
+</html>
