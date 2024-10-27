@@ -23,7 +23,33 @@
             <!-- Put the band selection here -->
         </div>
         <div id="toggle-range" class="control-item">
-            <!-- Put the  slider here-->
+            <!-- Put the slider here-->
+        </div>
+        <div id="guide" class="control-item">
+            <span id="guide-icon">&#x1F6C8;</span>
+            <!-- Info icon -->
+            <div id="tooltip-content" class="tooltip-content">
+                <strong>Seoul District Pollution Patterns User Guide</strong>
+                <p>
+                    This visualization provides insights into Seoul’s air pollution patterns across 25 districts and 6
+                    pollutants (CO, NO₂, O₃, PM2.5, PM10, SO₂).
+                </p>
+                <ul>
+                    <li><strong>Select Year:</strong> Use the dropdown to view data for 2017, 2018, or 2019.</li>
+                    <li><strong>Number of Bands:</strong> Adjust the color bands to control the intensity levels
+                        displayed in each chart.</li>
+                    <li><strong>Toggle View:</strong> Switch between grid and stacked layouts for different views of the
+                        charts.</li>
+                    <li><strong>Hover for Details:</strong> Hover over each chart to see detailed daily pollution
+                        values, date, and band ranges.</li>
+                    <li><strong>Color Legend:</strong> Each pollutant has a unique color to make identification easy.
+                    </li>
+                </ul>
+                <p>
+                    For optimal performance, avoid switching rapidly between years and bands. Reload the page if the
+                    application slows down.
+                </p>
+            </div>
         </div>
     </div>
     <div id="horizon-chart-container"></div>
