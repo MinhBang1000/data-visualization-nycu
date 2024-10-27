@@ -1,0 +1,56 @@
+#title {
+    text-align: center;
+    font-size: 20px;
+}
+
+#control {
+    display: flex;
+    justify-content: center;
+}
+
+.control-item{
+    margin-right: 20px;
+}
+
+rect {
+    pointer-events: all;
+    fill-opacity: 0;
+    stroke-opacity: 0;
+    z-index: 1;
+}
+
+.tooltip {
+    position: absolute;
+    padding: 5px;
+    background-color: rgb(11, 40, 65);
+    color: white;
+    border: 0px solid white;
+    border-radius: 0px;
+    display: none;
+    opacity: .75;
+    font-size: 14px;
+}
+
+.tooltip-line {
+    stroke-opacity: 0.5;
+}
+/* Year */
+#year-selection label{
+    margin-right: 10px;
+}
+
+/* band */
+#band-selection label{
+    margin-right: 10px;
+}
+
+/* Legend */
+#pollutant-legend {
+    display: flex;
+    justify-content: center;
+}
+
+.legend-item {
+    margin-right: 18px;
+    font-weight: bold;
+}
