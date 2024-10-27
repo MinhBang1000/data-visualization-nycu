@@ -75,7 +75,7 @@ function getChartData(data, district, pollutant) {
     return Array.from(new Map(data[pollutant].get(district)))
 }
 // Preprocessing
-d3.csv("air-pollution.csv").then(data => {
+d3.csv("http://vis.lab.djosix.com:2024/data/air-pollution.csv").then(data => {
     const [districts, pollutants, processedData] = dataProcessing(data, year)
     currentData = [districts, pollutants, processedData]
     // Add the selection of years
