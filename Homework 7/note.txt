@@ -1,0 +1,49 @@
+Create createChart function - OK
+Grid - OK
+Band change - OK
+Tooltip - OK
+Year selection - OK
+Legend
+
+
+// function dataProcessing(data, year = 2017) {
+//     const yearData = data.filter(d => fullTimeParse(d["Measurement date"]).getFullYear() === year)
+//     const districtSet = new Set()
+//     data.forEach(d => {
+//         const match = d["Address"].match(/\b\w+-gu\b/)
+//         if (match) {
+//             districtSet.add(match[0])
+//         }
+//     })
+//     const districts = Array.from(districtSet)
+//     const pollutants = [
+//         "CO",
+//         "NO2",
+//         "O3",
+//         "PM2.5",
+//         "PM10",
+//         "SO2"
+//     ]
+//     const processedData = {}
+//     pollutants.forEach(pollutant => {
+//         processedData[pollutant] = d3.rollup(
+//             yearData,
+//             v => d3.mean(v, d => d[pollutant]), 
+//             d => convertDistrictName(d["Address"]), 
+//             d => convertDate(d["Measurement date"])
+    
+//         );
+//     })
+//     return [
+//         districts,
+//         pollutants,
+//         processedData
+//     ]
+// }
+
+    mapData.forEach((value, key) => {
+        console.log(value); 
+    })
+        mapData.forEach((value, key) => {
+        console.log(timeParse(key)); 
+    })
