@@ -1,0 +1,40 @@
+.node rect {
+  cursor: move;
+  fill-opacity: .9;
+  shape-rendering: crispEdges;
+}
+
+.node text {
+  pointer-events: none;
+  text-shadow: 0 1px 0 #fff;
+}
+
+.link {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .5;
+}
+
+.link:hover {
+  stroke-opacity: .9;
+}
+
+/* Container */
+.container {
+  display: flex;
+  justify-content: center;
+}
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  padding: 5px;
+  background-color: rgb(11, 40, 65);
+  color: white;
+  border: 0px solid white;
+  border-radius: 0px;
+  display: none;
+  opacity: .75;
+  font-size: 14px;
+}
+

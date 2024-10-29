@@ -1,0 +1,188 @@
+1. Title: Car Evaluation Database
+
+2. Sources:
+   (a) Creator: Marko Bohanec
+   (b) Donors: Marko Bohanec   (marko.bohanec@ijs.si)
+               Blaz Zupan      (blaz.zupan@ijs.si)
+   (c) Date: June, 1997
+
+3. Past Usage:
+
+   The hierarchical decision model, from which this dataset is
+   derived, was first presented in 
+
+   M. Bohanec and V. Rajkovic: Knowledge acquisition and explanation for
+   multi-attribute decision making. In 8th Intl Workshop on Expert
+   Systems and their Applications, Avignon, France. pages 59-78, 1988.
+
+   Within machine-learning, this dataset was used for the evaluation
+   of HINT (Hierarchy INduction Tool), which was proved to be able to
+   completely reconstruct the original hierarchical model. This,
+   together with a comparison with C4.5, is presented in
+
+   B. Zupan, M. Bohanec, I. Bratko, J. Demsar: Machine learning by
+   function decomposition. ICML-97, Nashville, TN. 1997 (to appear)
+
+4. Relevant Information Paragraph:
+
+   Car Evaluation Database was derived from a simple hierarchical
+   decision model originally developed for the demonstration of DEX
+   (M. Bohanec, V. Rajkovic: Expert system for decision
+   making. Sistemica 1(1), pp. 145-157, 1990.). The model evaluates
+   cars according to the following concept structure:
+
+   CAR                      car acceptability
+   . PRICE                  overall price
+   . . buying               buying price
+   . . maint                price of the maintenance
+   . TECH                   technical characteristics
+   . . COMFORT              comfort
+   . . . doors              number of doors
+   . . . persons            capacity in terms of persons to carry
+   . . . lug_boot           the size of luggage boot
+   . . safety               estimated safety of the car
+
+   Input attributes are printed in lowercase. Besides the target
+   concept (CAR), the model includes three intermediate concepts:
+   PRICE, TECH, COMFORT. Every concept is in the original model
+   related to its lower level descendants by a set of examples (for
+   these examples sets see http://www-ai.ijs.si/BlazZupan/car.html).
+
+   The Car Evaluation Database contains examples with the structural
+   information removed, i.e., directly relates CAR to the six input
+   attributes: buying, maint, doors, persons, lug_boot, safety.
+
+   Because of known underlying concept structure, this database may be
+   particularly useful for testing constructive induction and
+   structure discovery methods.
+
+5. Number of Instances: 1728
+   (instances completely cover the attribute space)
+
+6. Number of Attributes: 6
+
+7. Attribute Values:
+
+   buying       v-high, high, med, low
+   maint        v-high, high, med, low
+   doors        2, 3, 4, 5more
+   persons      2, 4, more
+   lug_boot     small, med, big
+   safety       low, med, high
+
+8. Missing Attribute Values: none
+
+9. Class Distribution (number of instances per class)
+
+   class      N          N[%]
+   -----------------------------
+   unacc     1210     (70.023 %) 
+   acc        384     (22.222 %) 
+   good        69     ( 3.993 %) 
+   v-good      65     ( 3.762 %) 
+
+
+// attributes
+const keys = [
+    "buying",
+    "maint",
+    "doors",
+    "persons",
+    "lug_boot",
+    "safety",
+    "CAR"
+]
+
+const keyConverter = {
+    "buying" : "Buying",
+    "maint": "Maint",
+    "doors": "Doors",
+    "persons": "Persons",
+    "lug_boot": "Luggage Boot",
+    "safety": "Safety",
+    "CAR": "Car"
+}
+
+d3.text('car.data').then(data => {
+    const processedData = data.split("\n").map(d => {
+        const column = d.split(',')
+        return {
+            "buying": column[0],
+            "maint": column[1],
+            "doors": column[2],
+            "persons": column[3],
+            "lug_boot": column[4],
+            "safety": column[5],
+            "CAR": column[6]
+        }
+    })
+
+    
+})
+
+{
+"nodes":[
+{"node":0,"name":"node0"},
+{"node":1,"name":"node1"},
+{"node":2,"name":"node2"},
+{"node":3,"name":"node3"},
+{"node":4,"name":"node4"}
+],
+"links":[
+{"source":0,"target":2,"value":2},
+{"source":1,"target":2,"value":2},
+{"source":1,"target":3,"value":2},
+{"source":0,"target":4,"value":2},
+{"source":2,"target":3,"value":2},
+{"source":2,"target":4,"value":2},
+{"source":3,"target":4,"value":4}
+]}
+
+// Convert data
+FROM
+
+vhigh,vhigh,2,2,small,low,unacc
+
+To
+
+buying: "vhigh"
+doors: "2"
+luggage boot: "small"
+maintenance: "vhigh"
+persons: "2"
+safety: "low"
+
+To 
+
+    // const band = svg.append('g').selectAll('.band')
+    //     .data(Object.values(linkGroups))
+    //     .enter().append('g')
+    //     .attr('class', 'band');
+
+    // const link = band.selectAll('.link')
+    //     .data(d => d)
+    //     .enter().append('path')
+    //     .attr('class', 'link')
+    //     .attr('transform', `translate(${margin.left},${margin.top})`)
+    //     .attr('d', path)
+    //     .style('stroke-width', d => Math.max(1, d.dy))
+    //     .sort((a, b) => b.dy - a.dy)
+    //     .on('mousemove', function (d) {
+    //         tooltip.style("display", "block")
+    //             .style("left", `${d3.event.pageX + 10}px`)
+    //             .style("top", `${d3.event.pageY - 20}px`)
+    //             .html(`
+    //         <div><strong>Source: </strong>${d.source.name}</div>
+    //         <div><strong>Target: </strong>${d.target.name}</div>
+    //         <div><strong>Count: </strong>${d.value}</div>
+    //     `);
+    //     })
+    //     .on('mouseout', function () {
+    //         tooltip.style("display", "none");
+    //     });
+
+Enhancing
+- Tooltip - OK
+- Color - OK
+- Color selection
+- Align selection
