@@ -19,13 +19,7 @@ const sankey = d3.sankey()
     .size([diagramWidth + margin.left, diagramHeight + margin.top]);
 const path = sankey.link();
 
-function createControl() {
-    const legendContainer = d3.select('#control')
-
-}
-
 // 2. Color Scales and Mappings
-
 
 const colorScales = {
     buying: d3.scaleSequential(d3.interpolateBlues).domain([0, 0.5]), // Darkest shades only
@@ -44,9 +38,6 @@ const colorScalesIndex = {
     'luggage boot': { small: 0.1, med: 0.3, big: 0.5 },
     safety: { low: 0.1, med: 0.3, high: 0.5 },
 };
-
-
-
 
 // 3. Data Transformation Function
 const transformData = (data) => {
@@ -140,6 +131,7 @@ const renderLinks = (linkGroups) => {
         .style('stroke-width', d => Math.max(1, d.dy))
         .sort((a, b) => b.dy - a.dy)
         .on('mousemove', function (d) {
+            const percentage = ((d.value / d.source.value) * 100).toFixed(1);
             tooltip.style("display", "block")
                 .style("left", `${d3.event.pageX + 10}px`)
                 .style("top", `${d3.event.pageY - 20}px`)
@@ -147,6 +139,7 @@ const renderLinks = (linkGroups) => {
                     <div><strong>Source: </strong>${d.source.name}</div>
                     <div><strong>Target: </strong>${d.target.name}</div>
                     <div><strong>Count: </strong>${d.value}</div>
+                    <div><strong>Percentage:</strong> ${percentage}%</div>
                 `);
         })
         .on('mouseout', function () {
@@ -176,12 +169,18 @@ const renderLinks = (linkGroups) => {
             const gradient = defs.append("linearGradient")
                 .attr("id", gradientId)
                 .attr("gradientUnits", "userSpaceOnUse")
-                .attr("x1", d.source.x1)
-                .attr("x2", d.target.x0);
+                .attr("x1", d.source.x)
+                .attr("x2", d.target.x);
 
+            // Adjust gradient stops for smoother transition
             gradient.append("stop")
                 .attr("offset", "0%")
                 .attr("stop-color", colorScales[d.source.name.split('-')[0]](colorScalesIndex[d.source.name.split('-')[0]][d.source.name.split('-')[1]]));
+
+            gradient.append("stop")
+                .attr("offset", "50%") // Midway stop for blending colors smoothly
+                .attr("stop-color", d3.interpolate(colorScales[d.source.name.split('-')[0]](colorScalesIndex[d.source.name.split('-')[0]][d.source.name.split('-')[1]]),
+                    colorScales[d.target.name.split('-')[0]](colorScalesIndex[d.target.name.split('-')[0]][d.target.name.split('-')[1]]))(0.5));
 
             gradient.append("stop")
                 .attr("offset", "100%")
@@ -192,7 +191,7 @@ const renderLinks = (linkGroups) => {
 
 // Function to render nodes and node titles
 const renderNodes = (nodes) => {
-    
+
     const nodeGroup = svg.append('g').selectAll('.node')
         .data(nodes)
         .enter().append('g')
@@ -204,8 +203,9 @@ const renderNodes = (nodes) => {
             }).on('start', dragStart).on('drag', dragMove));
 
     // Add rectangles for each node
-    nodeGroup.append('rect')
+    const nodeRects = nodeGroup.append('rect')
         .attr('height', d => d.dy)
+        .attr('class', d => `node_${d.name}`)
         .attr('width', sankey.nodeWidth())
         .style('fill', d => {
             const [name, value] = d.name.split('-');
@@ -213,7 +213,7 @@ const renderNodes = (nodes) => {
             return d.color;
         })
         .style('stroke', "black")
-        .append('title')
+    nodeRects.append('title')
         .text(d => d.name);
 
     // Add labels for each node
@@ -228,14 +228,14 @@ const renderNodes = (nodes) => {
         .attr('x', 6 + sankey.nodeWidth())
         .attr('text-anchor', 'start');
 
-    
+
     const legendGroup = svg.append('g').attr('class', 'legend-group')
 
     const attributeLabels = ['buying', 'maintenance', 'doors', 'persons', 'luggage boot', 'safety'];
 
     for (let i = 0; i < 6; i++) {
         legendGroup.append('text')
-            .attr('x', i <= 0 ? nodes[i].x : nodes[i].x - 34)
+            .attr('x', i <= 0 ? nodes[i].x + 25 : nodes[i].x)
             .attr('y', diagramHeight + 50)
             .attr('dy', '.35em')
             .attr('font-size', 22)
@@ -243,6 +243,18 @@ const renderNodes = (nodes) => {
             .attr('fill', 'black') // Set the text color explicitly
             .text(attributeLabels[i]);
     }
+    nodeRects.on('mouseenter', function () {
+        const name = d3.select(this).attr('class').split('_')[1]
+        if (name.indexOf("luggage") !== -1) {
+            console.log(`.${name.split(' ')[1]}`);
+            d3.selectAll(`.${name.split(' ')[1]}`).classed('activate', true)
+        } else {
+            d3.selectAll(`.${name}`).classed('activate', true)
+        }
+    })
+    nodeRects.on('mouseout', function () {
+        d3.selectAll(`.link`).classed('activate', false)
+    })
 };
 
 // Drag event handlers
@@ -263,7 +275,7 @@ function dragMove(d) {
 };
 
 function createColorSelection() {
-    const selectionOptions = ['source-target', 'source', 'target']; // Define the options
+    const selectionOptions = ['source-target', 'source', 'target', 'static']; // Define the options
 
     // Add a label for the dropdown
     const dropdownContainer = d3.select("#color-selection")
@@ -279,7 +291,7 @@ function createColorSelection() {
     const dropdown = dropdownContainer.append('select')
         .attr('class', 'color-selection')
         .attr('id', 'color-mode-select');
-    
+
     dropdown.selectAll('option')
         .data(selectionOptions)
         .enter()
@@ -288,7 +300,7 @@ function createColorSelection() {
         .attr('value', d => d);
 
     // Handle dropdown change event
-    dropdown.on('change', function() {
+    dropdown.on('change', function () {
         const value = d3.select(this).property('value');
         if (linkColorMode !== value) {
             linkColorMode = value;

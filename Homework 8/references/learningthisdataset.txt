@@ -184,5 +184,10 @@ To
 Enhancing
 - Tooltip - OK
 - Color - OK
-- Color selection
-- Align selection
+- Color selection - OK
+- Hover all links - OK
+- Export to PDF
+- Click to specific path
+
+<path class="link luggage boot-big safety-med" transform="translate(0,0)" d="M823.2,436.66666666666663C913.6,436.66666666666663 913.6,312.22222222222223 1004,312.22222222222223" style="stroke-width: 42.2222; stroke: url(&quot;#gradient-luggage-boot-big-safety-med&quot;);"></path>
+<linearGradient id="gradient-luggage-boot-big-safety-med" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="rgb(63, 0, 125)"></stop><stop offset="10%" stop-color="rgb(63, 0, 125)"></stop><stop offset="90%" stop-color="rgb(239, 69, 51)"></stop><stop offset="100%" stop-color="rgb(239, 69, 51)"></stop></linearGradient>
