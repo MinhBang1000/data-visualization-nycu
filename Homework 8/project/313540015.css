@@ -1,0 +1,209 @@
+/* General container styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: white;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #333;
+}
+
+.container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* Title styling */
+#title h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    margin-top: 20px;
+    text-align: center;
+}
+
+/* Control panel styling */
+#control {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+/* Dropdown styling */
+#color-selection .dropdown-container {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+}
+
+#color-mode-select {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+#color-mode-select:hover {
+    border-color: #007bff;
+}
+
+/* Tooltip styling */
+.tooltip {
+    position: absolute;
+    padding: 8px 12px;
+    background-color: #333;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+    display: none;
+}
+
+/* Node styling */
+.node rect {
+    stroke: #4c4c4c;
+    /* rx: 3px; */
+    transition: fill 0.2s, transform 0.1s;
+}
+
+.node rect.activate {
+    fill-opacity: 0.7;
+    stroke: #333;
+    stroke-width: 2;
+}
+
+.node text {
+    fill: #333;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+/* Link styling */
+.link {
+    fill: none;
+    stroke-opacity: 0.5;
+    transition: stroke-opacity 0.3s;
+    stroke: #7c7c7c;
+}
+
+.link.activate{
+    stroke-opacity: 1;
+    stroke-width: 3px;
+}
+
+.link.clicked {
+    stroke-opacity: 1;                 /* Full opacity for a solid, clear link */
+    stroke-width: 5px;                 /* Increased width for emphasis */
+    stroke: #4caf50;                   /* Calming green color */
+    transition: stroke-width 0.2s ease, 
+                stroke-opacity 0.2s ease, 
+                stroke 0.2s ease;      /* Smooth transitions */
+    filter: drop-shadow(0 0 8px rgba(76, 175, 80, 0.7)); /* Soft green glow effect */
+}
+
+
+
+/* Enhanced Legend Styling */
+.legend-group text {
+    font-size: 1.2rem;                    /* Larger font for readability */
+    font-weight: bold;
+    fill: #333;                           /* Darker color for better contrast */
+    text-anchor: middle;
+    text-transform: uppercase;            /* Make legend text uppercase for emphasis */
+    letter-spacing: 1px;                  /* Slight letter-spacing for readability */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15); /* Subtle shadow for focus */
+    transition: fill 0.3s ease;           /* Smooth transition effect */
+}
+
+/* Hover effect for legend text */
+.legend-group text:hover {
+    fill: #4caf50;                        /* Highlight on hover with green color */
+    cursor: pointer;
+}
+
+
+/* Add smooth transitions and scale effect */
+.node rect:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
+.link:hover {
+    stroke-opacity: 0.8;
+}
+
+/* Style for tooltip toggle section */
+#block-tooltip {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+}
+
+#block-tooltip label {
+    font-size: 1rem;
+    color: #333;
+    margin-right: 8px;
+}
+
+#tooltip-toggle {
+    width: 40px;
+    height: 20px;
+    position: relative;
+    appearance: none;
+    background-color: #ccc;
+    outline: none;
+    border-radius: 20px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+#tooltip-toggle:checked {
+    background-color: #4caf50;
+}
+
+#tooltip-toggle::before {
+    content: '';
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: white;
+    transition: transform 0.3s ease;
+    transform: translateX(2px);
+}
+
+#tooltip-toggle:checked::before {
+    transform: translateX(20px);
+}
+
+/* Style for export button */
+#pdf-export {
+    margin: 10px 0;
+}
+
+#pdf-export button {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.2s ease;
+    font-weight: bold;
+}
+
+#pdf-export button:hover {
+    background-color: #45a049;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+#pdf-export button:active {
+    background-color: #3e8e41;
+}

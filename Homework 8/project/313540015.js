@@ -11,7 +11,7 @@ svg.attr('width', width)
 
 const diagramWidth = width - margin.left - margin.right;
 const diagramHeight = 500 - margin.top - margin.bottom;
-
+let tooltipStatus = true
 // Sankey Diagram Properties
 const sankey = d3.sankey()
     .nodeWidth(20)
@@ -110,7 +110,7 @@ const tooltip = d3.select('body')
     .attr('class', 'tooltip')
 
 // Change this value to control the coloring mode
-let linkColorMode = "source-target";
+let linkColorMode = "static";
 let parsedData = null
 
 // Function to render link paths
@@ -131,16 +131,18 @@ const renderLinks = (linkGroups) => {
         .style('stroke-width', d => Math.max(1, d.dy))
         .sort((a, b) => b.dy - a.dy)
         .on('mousemove', function (d) {
-            const percentage = ((d.value / d.source.value) * 100).toFixed(1);
-            tooltip.style("display", "block")
-                .style("left", `${d3.event.pageX + 10}px`)
-                .style("top", `${d3.event.pageY - 20}px`)
-                .html(`
+            if (tooltipStatus) {
+                const percentage = ((d.value / d.source.value) * 100).toFixed(1);
+                tooltip.style("display", "block")
+                    .style("left", `${d3.event.pageX + 10}px`)
+                    .style("top", `${d3.event.pageY - 20}px`)
+                    .html(`
                     <div><strong>Source: </strong>${d.source.name}</div>
                     <div><strong>Target: </strong>${d.target.name}</div>
                     <div><strong>Count: </strong>${d.value}</div>
                     <div><strong>Percentage:</strong> ${percentage}%</div>
                 `);
+            }
         })
         .on('mouseout', function () {
             tooltip.style("display", "none");
@@ -189,6 +191,8 @@ const renderLinks = (linkGroups) => {
     }
 };
 
+let pathNodes = []
+
 // Function to render nodes and node titles
 const renderNodes = (nodes) => {
 
@@ -200,7 +204,50 @@ const renderNodes = (nodes) => {
         .call(d3.drag()
             .subject(function (d) {
                 return d
-            }).on('start', dragStart).on('drag', dragMove));
+            })
+            .on('start', dragStart)
+            .on('drag', dragMove)
+            .on('end', function (d) {
+                const delta = Math.abs(d3.event.y - d.startY)
+                if (delta < 5) {
+                    const len = pathNodes.length
+                    // Click behavior: get node name and filter for specific links
+                    let nodeName = d.name.includes("luggage") ? d.name.split(" ")[1] : d.name;
+                    if (pathNodes.includes(nodeName)) {
+                        // Add the code to exclude
+                        pathNodes.splice(pathNodes.indexOf(nodeName), 1)
+                    } else {
+                        pathNodes.push(nodeName);
+                    }
+                    // Clear previous selections if needed
+                    d3.selectAll('.link').classed('clicked', false);
+                    if (len === 0) {
+                        d3.selectAll(`.link.${nodeName}`).classed('clicked', true);
+                    } else {
+                        pathNodes.forEach(path => {
+                            // Apply the clicked class to links associated with `nodeName`
+                            const links = d3.selectAll(`.link.${path}`);
+                            links.classed('clicked', true)
+                            links.each(function () {
+                                const link = d3.select(this)
+                                const classes = link.attr('class').split(' ')
+                                let count = 0
+                                classes.forEach(c => {
+                                    if (pathNodes.includes(c)) {
+                                        count++
+                                    }
+                                })
+                                if (count < 2) {
+                                    link.classed('clicked', false)
+                                }
+                            })
+                        })
+                    }
+
+                    console.log(pathNodes);
+
+                }
+            }))
 
     // Add rectangles for each node
     const nodeRects = nodeGroup.append('rect')
@@ -235,7 +282,7 @@ const renderNodes = (nodes) => {
 
     for (let i = 0; i < 6; i++) {
         legendGroup.append('text')
-            .attr('x', i <= 0 ? nodes[i].x + 25 : nodes[i].x)
+            .attr('x', i <= 0 ? nodes[i].x + 40 : i === 5 ? nodes[i].x - 20 : nodes[i].x)
             .attr('y', diagramHeight + 50)
             .attr('dy', '.35em')
             .attr('font-size', 22)
@@ -246,7 +293,6 @@ const renderNodes = (nodes) => {
     nodeRects.on('mouseenter', function () {
         const name = d3.select(this).attr('class').split('_')[1]
         if (name.indexOf("luggage") !== -1) {
-            console.log(`.${name.split(' ')[1]}`);
             d3.selectAll(`.${name.split(' ')[1]}`).classed('activate', true)
         } else {
             d3.selectAll(`.${name}`).classed('activate', true)
@@ -258,10 +304,10 @@ const renderNodes = (nodes) => {
 };
 
 // Drag event handlers
-function dragStart() {
+function dragStart(d) {
+    d.startY = d3.event.y
     this.parentNode.appendChild(this)
 };
-
 
 function dragMove(d) {
     d.y = Math.max(0, Math.min(height - d.dy, d3.event.y))
@@ -275,7 +321,7 @@ function dragMove(d) {
 };
 
 function createColorSelection() {
-    const selectionOptions = ['source-target', 'source', 'target', 'static']; // Define the options
+    const selectionOptions = ['static', 'source-target', 'source', 'target']; // Define the options
 
     // Add a label for the dropdown
     const dropdownContainer = d3.select("#color-selection")
@@ -312,17 +358,142 @@ function createColorSelection() {
     });
 }
 
+function createGuide() {
+    const parent = d3.select("#guide-info");
+
+    // Append a div that will serve as the tooltip guide
+    const guide = parent.append("div")
+        .attr("class", "guide-tooltip")
+        .style("position", "absolute")
+        .style("top", "20px")         // Position the tooltip at the top
+        .style("right", "20px")       // Position the tooltip at the right
+        .style("padding", "15px")
+        .style("background-color", "#333")
+        .style("color", "#fff")
+        .style("border-radius", "8px")
+        .style("width", "300px")
+        .style("box-shadow", "0 4px 8px rgba(0, 0, 0, 0.2)")
+        .style("display", "none");    // Initially hidden
+
+    // Add title for the guide
+    guide.append("h3")
+        .text("How to Use the Sankey Diagram")
+        .style("font-size", "1.2rem")
+        .style("margin-bottom", "10px")
+        .style("color", "#4caf50");
+
+    // Add instructions
+    guide.append("p")
+        .text("1. Drag nodes to rearrange them and explore relationships.")
+        .style("margin-bottom", "5px");
+
+    guide.append("p")
+        .text("2. Hover over the links to see detailed information in a tooltip.")
+        .style("margin-bottom", "5px");
+
+    guide.append("p")
+        .text("3. Toggle 'Show tooltip' to enable/disable tooltips.")
+        .style("margin-bottom", "5px");
+
+    guide.append("p")
+        .text("4. Use the 'Export to PDF' button to save the diagram.")
+        .style("margin-bottom", "5px");
+
+    guide.append("p")
+        .text("5. Path Highlighting: Click on a node to highlight paths connected to it, allowing for focused analysis on specific paths.")
+        .style("margin-bottom", "5px");
+    // Add a close button
+    guide.append("button")
+        .text("Close")
+        .style("margin-top", "10px")
+        .style("padding", "5px 10px")
+        .style("background-color", "#4caf50")
+        .style("color", "#fff")
+        .style("border", "none")
+        .style("border-radius", "4px")
+        .style("cursor", "pointer")
+        .on("click", function () {
+            guide.style("display", "none");  // Hide the guide when the button is clicked
+        });
+
+    // Add an 'i' icon or button to show/hide the guide
+    parent.append("button")
+        .text("ℹ️")
+        .attr("class", "guide-button")
+        .style("margin-top", "10px")
+        .style("padding", "5px 10px")
+        .style("background-color", "#4caf50")
+        .style("color", "#fff")
+        .style("border", "none")
+        .style("border-radius", "4px")
+        .style("cursor", "pointer")
+        .on("click", function () {
+            const display = guide.style("display") === "none" ? "block" : "none";
+            guide.style("display", display);  // Toggle display of the guide
+        });
+}
+
+function createBlockToolTip() {
+    const parent = d3.select('#block-tooltip')
+    parent.append('label')
+        .text('Show tooltip')
+        .attr('for', 'tooltip-toggle')
+    const blocker = parent.append('input')
+        .attr('type', 'checkbox')
+        .attr('id', 'tooltip-toggle')
+        .property('checked', tooltipStatus)
+
+    blocker.on('change', function () {
+        tooltipStatus = this.checked
+    })
+}
+
+function createExporter() {
+    const parent = d3.select('#pdf-export');
+
+    // Append a button for exporting the PDF
+    parent.append('button')
+        .attr('id', 'export-button')
+        .text('Export to PDF')
+        .on('click', exportToPDF); // Attach the export function to button click
+}
+
+// Define the export function
+function exportToPDF() {
+    const chartContainer = document.querySelector('body');
+
+    html2canvas(chartContainer, {
+        useCORS: true,
+        scale: 2 // Increase scale for better resolution
+    }).then(canvas => {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'px',
+            format: [canvas.width, canvas.height]
+        });
+
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
+        pdf.addImage(imgData, 'JPEG', 0, 0, canvas.width, canvas.height);
+        pdf.save('sankey-diagram.pdf');
+    });
+}
+
 
 function clearAllCharts() {
     // Select the container and remove all SVG elements within it
+    pathNodes = []
     svg.selectAll("*").remove();
 }
 
 // 5. Load Data and Render the Diagram
-d3.text('car.data').then((rawData) => {
+d3.text('http://vis.lab.djosix.com:2024/data/car.data').then((rawData) => {
     const csvData = 'buying,maintenance,doors,persons,luggage boot,safety\n' + rawData;
     parsedData = d3.csvParse(csvData);
     const transformedData = transformData(parsedData);
     createColorSelection()
+    createBlockToolTip()
+    createExporter()
+    createGuide();
     render(transformedData);
 });
