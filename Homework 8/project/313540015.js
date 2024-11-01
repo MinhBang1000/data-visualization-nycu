@@ -1,7 +1,7 @@
 // 1. SVG and Layout Configuration
 const width = 1024;
 const height = 600;
-const margin = { top: 0, right: 0, bottom: 0, left: 0 };
+const margin = { top: 100, right: 60, bottom: 100, left: 60 };
 
 const chartContainer = d3.select('#sankey-chart-container')
 const svg = chartContainer.append('svg')
@@ -9,14 +9,14 @@ const svg = chartContainer.append('svg')
 svg.attr('width', width)
     .attr('height', height)
 
-const diagramWidth = width - margin.left - margin.right;
-const diagramHeight = 500 - margin.top - margin.bottom;
+const diagramWidth = width - 2 * margin.left;
+const diagramHeight = height - 2 * margin.top;
 let tooltipStatus = true
 // Sankey Diagram Properties
 const sankey = d3.sankey()
     .nodeWidth(20)
     .nodePadding(40)
-    .size([diagramWidth + margin.left, diagramHeight + margin.top]);
+    .size([diagramWidth, diagramHeight]);
 const path = sankey.link();
 
 // 2. Color Scales and Mappings
@@ -70,7 +70,8 @@ const transformData = (data) => {
 
 // 4. Render Function
 const render = (graph) => {
-    svg.attr('transform', `translate(${margin.left},${margin.top})`);
+    const selection = svg
+    // .attr('transform', `translate(${margin.left},${margin.top})`);
 
     // Map nodes to graph.links
     const nodeMap = graph.nodes.reduce((acc, node) => {
@@ -88,10 +89,10 @@ const render = (graph) => {
 
     // Group and Render Links
     const linkGroups = groupLinks(graph.links);
-    renderLinks(linkGroups);
+    renderLinks(linkGroups, selection);
 
     // Render Nodes
-    renderNodes(graph.nodes);
+    renderNodes(graph.nodes, selection);
 };
 
 // Helper function to group links by source-target pairs
@@ -114,8 +115,8 @@ let linkColorMode = "static";
 let parsedData = null
 
 // Function to render link paths
-const renderLinks = (linkGroups) => {
-    const band = svg.append('g').selectAll('.band')
+const renderLinks = (linkGroups, selection) => {
+    const band = selection.append('g').selectAll('.band')
         .data(Object.values(linkGroups))
         .enter().append('g')
         .attr('class', 'band');
@@ -194,9 +195,8 @@ const renderLinks = (linkGroups) => {
 let pathNodes = []
 
 // Function to render nodes and node titles
-const renderNodes = (nodes) => {
-
-    const nodeGroup = svg.append('g').selectAll('.node')
+const renderNodes = (nodes, selection) => {
+    const nodeGroup = selection.append('g').selectAll('.node')
         .data(nodes)
         .enter().append('g')
         .attr('class', 'node')
@@ -275,21 +275,6 @@ const renderNodes = (nodes) => {
         .attr('x', 6 + sankey.nodeWidth())
         .attr('text-anchor', 'start');
 
-
-    const legendGroup = svg.append('g').attr('class', 'legend-group')
-
-    const attributeLabels = ['buying', 'maintenance', 'doors', 'persons', 'luggage boot', 'safety'];
-
-    for (let i = 0; i < 6; i++) {
-        legendGroup.append('text')
-            .attr('x', i <= 0 ? nodes[i].x + 40 : i === 5 ? nodes[i].x - 20 : nodes[i].x)
-            .attr('y', diagramHeight + 50)
-            .attr('dy', '.35em')
-            .attr('font-size', 22)
-            .attr('font-weight', 'bold')
-            .attr('fill', 'black') // Set the text color explicitly
-            .text(attributeLabels[i]);
-    }
     nodeRects.on('mouseenter', function () {
         const name = d3.select(this).attr('class').split('_')[1]
         if (name.indexOf("luggage") !== -1) {
@@ -309,16 +294,29 @@ function dragStart(d) {
     this.parentNode.appendChild(this)
 };
 
+
+
 function dragMove(d) {
-    d.y = Math.max(0, Math.min(height - d.dy, d3.event.y))
+    // Calculate the node width and height
+    const nodeWidth = sankey.nodeWidth();
+    const nodeHeight = d.dy;
+
+    // Restrict x and y coordinates within SVG boundaries
+    d.x = Math.max(-margin.left, Math.min(d3.event.x, width - nodeWidth - margin.right));
+    d.y = Math.max(-margin.top, Math.min(d3.event.y, height - nodeHeight - margin.bottom));
+
+    // Apply translation
     d3.select(this).attr(
         'transform',
-        `translate(${margin.left + d.x},
-        ${margin.top + Math.max(0, Math.min(height - d.dy, d3.event.y))})`
+        `translate(${d.x + margin.left}, ${d.y + margin.top})`
     );
+
+    // Update the Sankey layout and redraw links
     sankey.relayout();
     svg.selectAll('.link').attr('d', path);
-};
+}
+
+
 
 function createColorSelection() {
     const selectionOptions = ['static', 'source-target', 'source', 'target']; // Define the options
@@ -479,6 +477,76 @@ function exportToPDF() {
     });
 }
 
+function createColorLegend() {
+    const legendContainer = d3.select("#sankey-legend-container");
+
+    const attributes = [
+        { name: 'buying', values: ['vhigh', 'high', 'med', 'low'] },
+        { name: 'maintenance', values: ['vhigh', 'high', 'med', 'low'] },
+        { name: 'doors', values: ['2', '3', '4', '5more'] },
+        { name: 'persons', values: ['2', '4', 'more'] },
+        { name: 'luggage boot', values: ['small', 'med', 'big'] },
+        { name: 'safety', values: ['low', 'med', 'high'] },
+    ];
+
+    attributes.forEach(attr => {
+        // Create a container for each attribute legend
+        const attributeGroup = legendContainer.append("div")
+            .attr("class", "legend-group")
+            .style("margin-bottom", "10px");
+
+        // Add attribute name as a title
+        attributeGroup.append("div")
+            .text(attr.name)
+            .style("font-weight", "bold")
+            .style("margin-bottom", "5px");
+
+        // Create a separate line for each value in the attribute
+        const legendItems = attributeGroup.selectAll(".legend-item")
+            .data(attr.values)
+            .enter()
+            .append("div")
+            .attr("class", "legend-item")
+            .style("display", "flex") // Display in a column for each value
+            .style("align-items", "center")
+            .style("margin-bottom", "5px"); // Spacing between each line item
+
+        // Add color box for each value
+        legendItems.append("div")
+            .style("width", "20px")
+            .style("height", "20px")
+            .style("background-color", d => colorScales[attr.name](colorScalesIndex[attr.name][d]))
+            .style("margin-right", "10px");
+
+        // Add label text for each value
+        legendItems.append("span")
+            .text(d => d)
+            .style("font-size", "0.9rem");
+    });
+}
+
+// Reset chart
+// Step 1: Add the Reset Button in the #reset-chart div
+function createResetButton() {
+    d3.select("#reset-chart")
+        .append("button")
+        .text("Reset Chart")
+        .attr("id", "reset-button")
+        .style("padding", "10px 20px")
+        .style("font-size", "1rem")
+        .style("cursor", "pointer")
+        .on("click", resetChart); // Attach reset function to button click
+}
+
+// Step 3: Define the Reset Function
+function resetChart() {
+    // Clear all SVG contents
+    svg.selectAll("*").remove();
+
+    // Re-render the Sankey chart from the initial data
+    render(transformData(parsedData));
+}
+
 
 function clearAllCharts() {
     // Select the container and remove all SVG elements within it
@@ -494,6 +562,8 @@ d3.text('http://vis.lab.djosix.com:2024/data/car.data').then((rawData) => {
     createColorSelection()
     createBlockToolTip()
     createExporter()
-    createGuide();
+    createGuide()
+    createColorLegend();
+    createResetButton();
     render(transformedData);
 });
