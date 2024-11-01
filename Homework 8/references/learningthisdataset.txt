@@ -191,3 +191,77 @@ Enhancing
 
 <path class="link luggage boot-big safety-med" transform="translate(0,0)" d="M823.2,436.66666666666663C913.6,436.66666666666663 913.6,312.22222222222223 1004,312.22222222222223" style="stroke-width: 42.2222; stroke: url(&quot;#gradient-luggage-boot-big-safety-med&quot;);"></path>
 <linearGradient id="gradient-luggage-boot-big-safety-med" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="rgb(63, 0, 125)"></stop><stop offset="10%" stop-color="rgb(63, 0, 125)"></stop><stop offset="90%" stop-color="rgb(239, 69, 51)"></stop><stop offset="100%" stop-color="rgb(239, 69, 51)"></stop></linearGradient>
+
+
+
+// function dragMove(d) {
+//     d.y = Math.max(0, Math.min(height - d.dy, d3.event.y))
+//     d3.select(this).attr(
+//         'transform',
+//         `translate(${margin.left + d.x},
+//         ${margin.top + Math.max(0, Math.min(height - d.dy, d3.event.y))})`
+//     );
+//     sankey.relayout();
+//     svg.selectAll('.link').attr('d', path);
+// };
+
+// function dragMove(d) {
+//     d.x = d3.event.x; // Allow free movement on the x-axis
+//     d.y = d3.event.y; // Allow free movement on the y-axis
+
+//     d3.select(this).attr(
+//         'transform',
+//         `translate(${d.x + margin.left}, ${d.y + margin.top})`
+//     );
+
+//     sankey.relayout();
+//     svg.selectAll('.link').attr('d', path);
+// };
+
+function createColorLegend() {
+    const legendContainer = d3.select("#sankey-legend-container");
+
+    const attributes = [
+        { name: 'buying', values: ['vhigh', 'high', 'med', 'low'] },
+        { name: 'maintenance', values: ['vhigh', 'high', 'med', 'low'] },
+        { name: 'doors', values: ['2', '3', '4', '5more'] },
+        { name: 'persons', values: ['2', '4', 'more'] },
+        { name: 'luggage boot', values: ['small', 'med', 'big'] },
+        { name: 'safety', values: ['low', 'med', 'high'] },
+    ];
+
+    attributes.forEach(attr => {
+        // Create a group for each attribute legend
+        const attributeGroup = legendContainer.append("div")
+            .attr("class", "legend-group")
+            .style("margin-bottom", "10px");
+
+        // Add attribute name as a title
+        attributeGroup.append("div")
+            .text(attr.name)
+            .style("font-weight", "bold")
+            .style("margin-bottom", "5px");
+
+        // Create legend items for each value in the attribute
+        const legendItems = attributeGroup.selectAll(".legend-item")
+            .data(attr.values)
+            .enter()
+            .append("div")
+            .attr("class", "legend-item")
+            .style("display", "inline-flex")
+            .style("align-items", "center")
+            .style("margin-right", "10px");
+
+        // Add color box
+        legendItems.append("div")
+            .style("width", "20px")
+            .style("height", "20px")
+            .style("background-color", d => colorScales[attr.name](colorScalesIndex[attr.name][d]))
+            .style("margin-right", "5px");
+
+        // Add label text
+        legendItems.append("span")
+            .text(d => d)
+            .style("font-size", "0.9rem");
+    });
+}
